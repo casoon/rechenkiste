@@ -208,6 +208,58 @@ function deserializeTask(data: SerializedTask): TaskInstance {
         };
       }
 
+      // Für Bruch-Aufgaben: Äquivalente Brüche akzeptieren (z.B. 6/8 = 3/4)
+      if (
+        data.typeId?.includes("fraction") ||
+        String(correctAnswer).includes("/")
+      ) {
+        const normalizedAnswer = answer
+          .trim()
+          .replace(/\s+/g, "")
+          .replace("½", "1/2")
+          .replace("¼", "1/4")
+          .replace("¾", "3/4")
+          .replace("⅓", "1/3")
+          .replace("⅔", "2/3");
+        const normalizedCorrect = String(correctAnswer).replace(/\s+/g, "");
+
+        // Direkter Vergleich
+        if (normalizedAnswer === normalizedCorrect) {
+          return {
+            isCorrect: true,
+            correctAnswer,
+            userAnswer: answer,
+          };
+        }
+
+        // Prüfe auf äquivalente Brüche
+        const userMatch = normalizedAnswer.match(/^(\d+)\/(\d+)$/);
+        const correctMatch = normalizedCorrect.match(/^(\d+)\/(\d+)$/);
+
+        if (userMatch && correctMatch) {
+          const userNum = parseInt(userMatch[1], 10);
+          const userDen = parseInt(userMatch[2], 10);
+          const correctNum = parseInt(correctMatch[1], 10);
+          const correctDen = parseInt(correctMatch[2], 10);
+
+          // Kreuzprodukt-Vergleich
+          if (userNum * correctDen === correctNum * userDen) {
+            return {
+              isCorrect: true,
+              correctAnswer,
+              userAnswer: answer,
+            };
+          }
+        }
+
+        return {
+          isCorrect: false,
+          correctAnswer,
+          userAnswer: answer,
+          hint: data.hint,
+        };
+      }
+
       // Für andere numerische Aufgaben: Komma/Punkt-Toleranz
       const normalizedAnswer = answer.trim().toLowerCase().replace(",", ".");
       const normalizedCorrect = String(correctAnswer)

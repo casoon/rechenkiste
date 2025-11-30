@@ -183,13 +183,40 @@ class FractionTask extends BaseTask<FractionData> {
 
     const normalizedCorrect = correctAnswer.replace(/\s+/g, "");
 
-    const isCorrect = normalizedAnswer === normalizedCorrect;
+    // Direkter Vergleich
+    if (normalizedAnswer === normalizedCorrect) {
+      return {
+        isCorrect: true,
+        correctAnswer,
+        userAnswer: normalized,
+      };
+    }
+
+    // Prüfe auf äquivalente Brüche (z.B. 6/8 = 3/4)
+    const userMatch = normalizedAnswer.match(/^(\d+)\/(\d+)$/);
+    const correctMatch = normalizedCorrect.match(/^(\d+)\/(\d+)$/);
+
+    if (userMatch && correctMatch) {
+      const userNum = parseInt(userMatch[1], 10);
+      const userDen = parseInt(userMatch[2], 10);
+      const correctNum = parseInt(correctMatch[1], 10);
+      const correctDen = parseInt(correctMatch[2], 10);
+
+      // Prüfe ob Brüche äquivalent sind (Kreuzprodukt)
+      if (userNum * correctDen === correctNum * userDen) {
+        return {
+          isCorrect: true,
+          correctAnswer,
+          userAnswer: normalized,
+        };
+      }
+    }
 
     return {
-      isCorrect,
+      isCorrect: false,
       correctAnswer,
       userAnswer: normalized,
-      hint: isCorrect ? undefined : this.getHint(),
+      hint: this.getHint(),
     };
   }
 
