@@ -1,0 +1,89 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { t, getLocaleFromUrl } from "@i18n/translations";
+import type { Locale } from "@i18n/translations";
+import { getSession, getCurrentTask } from "@domain/session";
+import { renderTaskFragment } from "@services/task-renderer";
+
+const locale: Locale = getLocaleFromUrl(Astro.url);
+const sessionId = Astro.url.searchParams.get("session");
+
+if (!sessionId) {
+    return Astro.redirect("/");
+}
+
+const session = getSession(sessionId);
+if (!session) {
+    return Astro.redirect("/");
+}
+
+const currentTask = getCurrentTask(session);
+if (!currentTask) {
+    return Astro.redirect(`/ergebnis?session=${sessionId}`);
+}
+
+const progress = Math.round((session.currentIndex / session.totalTasks) * 100);
+
+// Render task fragment using @casoon/fragment-renderer
+const taskHtml = await renderTaskFragment(currentTask, sessionId, locale);
+---
+
+<BaseLayout
+    title={t(locale, "taskOf", {
+        current: session.currentIndex + 1,
+        total: session.totalTasks,
+    })}
+    locale={locale}
+>
+    <div
+        class="glass-card-strong p-6 md:p-10 max-w-2xl w-full"
+        transition:name="main-card"
+    >
+        <!-- Progress -->
+        <div class="mb-6" transition:name="progress">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-lg font-bold text-purple-700">
+                    {
+                        t(locale, "taskOf", {
+                            current: session.currentIndex + 1,
+                            total: session.totalTasks,
+                        })
+                    }
+                </span>
+                <span class="text-lg font-bold text-purple-700">
+                    {progress}%
+                </span>
+            </div>
+            <div class="progress-bar">
+                <div
+                    class="progress-fill"
+                    style={`width: ${progress}%`}
+                    transition:animate="none"
+                >
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Container - rendered via @casoon/fragment-renderer -->
+        <div
+            id="task-container"
+            class="task-container"
+            transition:name="task"
+            set:html={taskHtml}
+        />
+    </div>
+</BaseLayout>
+
+<script>
+    // Listen for HTMX events
+    document.addEventListener("htmx:afterSwap", (event) => {
+        const target = (event as CustomEvent).detail.target;
+        if (target.id === "feedback-container" && target.innerHTML.trim()) {
+            // Hide the form when feedback is shown
+            const form = document.getElementById("answer-form");
+            if (form) {
+                form.style.display = "none";
+            }
+        }
+    });
+</script>

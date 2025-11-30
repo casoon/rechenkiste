@@ -1,0 +1,72 @@
+---
+import type { Locale } from "@i18n/translations";
+import { t } from "@i18n/translations";
+
+interface Props {
+    locale: Locale;
+    nextUrl: string;
+    isComplete: boolean;
+}
+
+const { locale, nextUrl, isComplete } = Astro.props;
+---
+
+<div
+    class="feedback-correct bounce-in"
+    data-next-url={nextUrl}
+    data-delay="1500"
+>
+    <div class="text-4xl mb-2">🎉</div>
+    <p>{t(locale, "correct")}</p>
+    <div class="mt-4 flex items-center justify-center gap-2 text-green-600">
+        <span class="loading-dots">
+            <span class="dot">.</span><span class="dot">.</span><span
+                class="dot">.</span
+            >
+        </span>
+    </div>
+</div>
+
+<style>
+    .loading-dots .dot {
+        animation: dot-pulse 1.4s infinite ease-in-out both;
+        font-size: 2rem;
+        font-weight: bold;
+    }
+    .loading-dots .dot:nth-child(1) {
+        animation-delay: 0s;
+    }
+    .loading-dots .dot:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+    .loading-dots .dot:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+
+    @keyframes dot-pulse {
+        0%,
+        80%,
+        100% {
+            opacity: 0.3;
+        }
+        40% {
+            opacity: 1;
+        }
+    }
+</style>
+
+<script>
+    const feedback = document.querySelector(
+        ".feedback-correct[data-next-url]",
+    ) as HTMLElement;
+    if (feedback) {
+        const nextUrl = feedback.dataset.nextUrl;
+        const delay = parseInt(feedback.dataset.delay || "1500", 10);
+
+        setTimeout(() => {
+            if (nextUrl) {
+                window.location.href = nextUrl;
+            }
+        }, delay);
+    }
+</script>

@@ -1,0 +1,91 @@
+---
+import type { TaskInstance, ArithmeticData } from "@domain/task-system";
+import type { Locale } from "@i18n/translations";
+import { t } from "@i18n/translations";
+
+interface Props {
+    task: TaskInstance<ArithmeticData>;
+    locale: Locale;
+    sessionId: string;
+}
+
+const { task, locale, sessionId } = Astro.props;
+
+// Prüfe ob die Frage SVG enthält
+const hasSvg = task.question.includes("<svg");
+
+// Trenne SVG vom Text wenn vorhanden
+let svgPart = "";
+let textPart = task.question;
+
+if (hasSvg) {
+    const svgMatch = task.question.match(/<svg[\s\S]*?<\/svg>/);
+    if (svgMatch) {
+        svgPart = svgMatch[0];
+        textPart = task.question.replace(svgPart, "").trim();
+    }
+}
+---
+
+<div class="slide-up">
+    <div class="task-question">
+        {
+            !hasSvg && (
+                <span class="text-gray-500 text-xl block mb-2">
+                    {t(locale, "calculate")}
+                </span>
+            )
+        }
+        {
+            hasSvg && svgPart && (
+                <div class="bg-white/80 rounded-xl p-4 mb-4">
+                    <Fragment set:html={svgPart} />
+                </div>
+            )
+        }
+        {
+            hasSvg ? (
+                <p class="text-xl md:text-2xl whitespace-pre-line">
+                    {textPart}
+                </p>
+            ) : (
+                <span class="text-4xl md:text-5xl font-bold">
+                    {task.question}
+                </span>
+            )
+        }
+    </div>
+</div>
+
+<form
+    id="answer-form"
+    hx-post="/api/test/answer"
+    hx-target="#feedback-container"
+    hx-swap="innerHTML"
+    class="mt-8 space-y-6"
+>
+    <input type="hidden" name="sessionId" value={sessionId} />
+    <input type="hidden" name="locale" value={locale} />
+    <input type="hidden" name="taskId" value={task.id} />
+
+    <div>
+        <label for="answer" class="sr-only">{t(locale, "yourAnswer")}</label>
+        <input
+            type="text"
+            id="answer"
+            name="answer"
+            class="input-field"
+            placeholder={t(locale, "yourAnswer")}
+            autocomplete="off"
+            inputmode="numeric"
+            required
+            autofocus
+        />
+    </div>
+
+    <button type="submit" class="btn-success w-full">
+        {t(locale, "checkAnswer")}
+    </button>
+</form>
+
+<div id="feedback-container" class="mt-6"></div>

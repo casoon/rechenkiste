@@ -1,0 +1,310 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { t, getLocaleFromUrl, getLocalizedPath } from "@i18n/translations";
+import type { Locale } from "@i18n/translations";
+import { taskRegistry, initTaskSystem } from "@domain/task-system";
+
+// Initialize task system to ensure all tasks are registered
+initTaskSystem();
+
+const locale: Locale = getLocaleFromUrl(Astro.url);
+
+// Get all task definitions grouped by grade
+const allTasks = taskRegistry.getAll();
+const tasksByGrade: Record<number, typeof allTasks> = {
+    1: allTasks.filter((t) => t.grade === 1),
+    2: allTasks.filter((t) => t.grade === 2),
+    3: allTasks.filter((t) => t.grade === 3),
+    4: allTasks.filter((t) => t.grade === 4),
+    5: allTasks.filter((t) => t.grade === 5),
+};
+
+const content = {
+    de: {
+        title: "Aufgaben auswählen",
+        subtitle: "Stelle deinen eigenen Test zusammen",
+        selectGrade: "Klasse",
+        selectAll: "Alle auswählen",
+        deselectAll: "Alle abwählen",
+        taskCount: "Anzahl Aufgaben",
+        tasks: "Aufgaben",
+        selectedTypes: "ausgewählte Aufgabentypen",
+        startCustomTest: "Test starten",
+        noSelection: "Bitte wähle mindestens einen Aufgabentyp aus",
+        options: "Optionen",
+        adaptiveDifficulty:
+            "Schwierigkeit anpassen (leichter/schwerer je nach Antworten)",
+        retryIncorrect: "Fehler am Ende wiederholen",
+    },
+    en: {
+        title: "Select Tasks",
+        subtitle: "Create your own custom test",
+        selectGrade: "Grade",
+        selectAll: "Select all",
+        deselectAll: "Deselect all",
+        taskCount: "Number of tasks",
+        tasks: "tasks",
+        selectedTypes: "selected task types",
+        startCustomTest: "Start Test",
+        noSelection: "Please select at least one task type",
+        options: "Options",
+        adaptiveDifficulty:
+            "Adjust difficulty (easier/harder based on answers)",
+        retryIncorrect: "Retry incorrect at end",
+    },
+    uk: {
+        title: "Вибрати завдання",
+        subtitle: "Створи свій власний тест",
+        selectGrade: "Клас",
+        selectAll: "Вибрати всі",
+        deselectAll: "Скасувати вибір",
+        taskCount: "Кількість завдань",
+        tasks: "завдань",
+        selectedTypes: "вибраних типів завдань",
+        startCustomTest: "Почати тест",
+        noSelection: "Будь ласка, вибери хоча б один тип завдань",
+        options: "Опції",
+        adaptiveDifficulty:
+            "Налаштувати складність (легше/важче залежно від відповідей)",
+        retryIncorrect: "Повторити помилки в кінці",
+    },
+};
+
+const c = content[locale];
+
+// Category labels
+const categoryLabels = {
+    de: {
+        arithmetic: "Rechnen",
+        "word-problem": "Textaufgaben",
+        geometry: "Geometrie",
+        "number-sense": "Zahlenverständnis",
+        measurement: "Maßeinheiten",
+        data: "Daten & Diagramme",
+    },
+    en: {
+        arithmetic: "Arithmetic",
+        "word-problem": "Word Problems",
+        geometry: "Geometry",
+        "number-sense": "Number Sense",
+        measurement: "Measurements",
+        data: "Data & Charts",
+    },
+    uk: {
+        arithmetic: "Арифметика",
+        "word-problem": "Текстові задачі",
+        geometry: "Геометрія",
+        "number-sense": "Числове чуття",
+        measurement: "Вимірювання",
+        data: "Дані та діаграми",
+    },
+};
+
+const catLabels = categoryLabels[locale];
+---
+
+<BaseLayout title={c.title} locale={locale}>
+    <div class="glass-card-strong p-6 md:p-8 max-w-4xl w-full">
+        <h1 class="text-2xl md:text-3xl font-bold text-purple-700 mb-2">
+            {c.title}
+        </h1>
+        <p class="text-gray-600 mb-6">{c.subtitle}</p>
+
+        <form
+            action="/api/test/custom"
+            method="POST"
+            x-data={`{
+        selected: [],
+        count: 10,
+        toggleGrade(grade) {
+          const gradeCheckboxes = document.querySelectorAll(\`input[data-grade="\${grade}"]\`);
+          const allChecked = Array.from(gradeCheckboxes).every(cb => cb.checked);
+          gradeCheckboxes.forEach(cb => {
+            cb.checked = !allChecked;
+            this.updateSelected(cb.value, !allChecked);
+          });
+        },
+        updateSelected(typeId, checked) {
+          if (checked && !this.selected.includes(typeId)) {
+            this.selected.push(typeId);
+          } else if (!checked) {
+            this.selected = this.selected.filter(id => id !== typeId);
+          }
+        },
+        selectAll() {
+          document.querySelectorAll('input[name="taskTypes"]').forEach(cb => {
+            cb.checked = true;
+            this.updateSelected(cb.value, true);
+          });
+        },
+        deselectAll() {
+          document.querySelectorAll('input[name="taskTypes"]').forEach(cb => {
+            cb.checked = false;
+          });
+          this.selected = [];
+        }
+      }`}
+        >
+            <input type="hidden" name="locale" value={locale} />
+            <input
+                type="hidden"
+                name="selectedTypes"
+                :value="JSON.stringify(selected)"
+            />
+
+            <!-- Task Count Selection -->
+            <div class="mb-6 p-4 bg-purple-50 rounded-xl">
+                <label class="block text-lg font-bold text-purple-700 mb-3"
+                    >{c.taskCount}</label
+                >
+                <div class="flex flex-wrap gap-2">
+                    {
+                        [10, 20, 30, 40, 50].map((num) => (
+                            <label class="cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="count"
+                                    value={num}
+                                    x-model="count"
+                                    class="sr-only peer"
+                                    checked={num === 10}
+                                />
+                                <span class="inline-block px-4 py-2 rounded-lg border-2 border-purple-200 peer-checked:border-purple-500 peer-checked:bg-purple-100 peer-checked:text-purple-700 transition-colors">
+                                    {num} {c.tasks}
+                                </span>
+                            </label>
+                        ))
+                    }
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="flex gap-3 mb-6">
+                <button
+                    type="button"
+                    @click="selectAll()"
+                    class="px-4 py-2 text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
+                >
+                    {c.selectAll}
+                </button>
+                <button
+                    type="button"
+                    @click="deselectAll()"
+                    class="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                    {c.deselectAll}
+                </button>
+            </div>
+
+            <!-- Task Types by Grade -->
+            <div class="space-y-6 mb-6">
+                {
+                    Object.entries(tasksByGrade).map(([grade, tasks]) => (
+                        <div class="border-2 border-gray-100 rounded-xl overflow-hidden">
+                            <div
+                                class="bg-gradient-to-r from-purple-100 to-purple-50 p-3 flex justify-between items-center cursor-pointer"
+                                @click={`toggleGrade(${grade})`}
+                            >
+                                <h3 class="font-bold text-purple-700">
+                                    {c.selectGrade} {grade}
+                                </h3>
+                                <span class="text-sm text-purple-500">
+                                    {tasks.length} {c.tasks}
+                                </span>
+                            </div>
+
+                            <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-2">
+                                {tasks.map((task) => (
+                                    <label class="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            name="taskTypes"
+                                            value={task.typeId}
+                                            data-grade={grade}
+                                            @change={`updateSelected('${task.typeId}', $event.target.checked)`}
+                                            class="mt-1 w-4 h-4 rounded border-purple-300 text-purple-600 focus:ring-purple-500"
+                                        />
+                                        <div class="flex-1 min-w-0">
+                                            <span class="block text-gray-800 text-sm font-medium truncate">
+                                                {task.description}
+                                            </span>
+                                            <span class="text-xs text-gray-500">
+                                                {catLabels[
+                                                    task.category as keyof typeof catLabels
+                                                ] || task.category}
+                                            </span>
+                                        </div>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+                    ))
+                }
+            </div>
+
+            <!-- Options (ausklappbar) -->
+            <details class="group mb-6">
+                <summary
+                    class="flex items-center justify-between cursor-pointer p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                >
+                    <span class="text-sm font-medium text-gray-600">
+                        {c.options}
+                    </span>
+                    <span
+                        class="text-gray-400 group-open:rotate-180 transition-transform"
+                        >▼</span
+                    >
+                </summary>
+                <div class="mt-3 p-4 bg-purple-50 rounded-xl space-y-2">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            name="adaptive"
+                            class="w-5 h-5 rounded border-purple-300 text-purple-600 focus:ring-purple-500"
+                        />
+                        <span class="text-gray-700">{c.adaptiveDifficulty}</span
+                        >
+                    </label>
+
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            name="retry"
+                            class="w-5 h-5 rounded border-purple-300 text-purple-600 focus:ring-purple-500"
+                        />
+                        <span class="text-gray-700">{c.retryIncorrect}</span>
+                    </label>
+                </div>
+            </details>
+
+            <!-- Selection Summary & Submit -->
+            <div
+                class="flex flex-col sm:flex-row gap-4 items-center justify-between p-4 bg-gray-50 rounded-xl"
+            >
+                <div class="text-center sm:text-left">
+                    <span
+                        class="text-2xl font-bold text-purple-700"
+                        x-text="selected.length">0</span
+                    >
+                    <span class="text-gray-600"> {c.selectedTypes}</span>
+                </div>
+
+                <button
+                    type="submit"
+                    class="btn-primary px-8"
+                    :disabled="selected.length === 0"
+                    :class="selected.length === 0 && 'opacity-50 cursor-not-allowed'"
+                >
+                    {c.startCustomTest}
+                </button>
+            </div>
+
+            <p
+                x-show="selected.length === 0"
+                class="text-center text-orange-600 text-sm mt-3"
+            >
+                {c.noSelection}
+            </p>
+        </form>
+    </div>
+</BaseLayout>

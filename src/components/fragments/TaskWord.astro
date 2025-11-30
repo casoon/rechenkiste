@@ -1,0 +1,54 @@
+---
+import type { TaskInstance, WordProblemData } from "@domain/task-system";
+import type { Locale } from "@i18n/translations";
+import { t } from "@i18n/translations";
+
+interface Props {
+    task: TaskInstance<WordProblemData>;
+    locale: Locale;
+    sessionId: string;
+}
+
+const { task, locale, sessionId } = Astro.props;
+---
+
+<div class="slide-up">
+    <div class="task-question">
+        <div class="bg-white/60 rounded-xl p-6 mb-4 text-left">
+            <p class="text-xl md:text-2xl leading-relaxed">{task.data.story}</p>
+        </div>
+    </div>
+</div>
+
+<form
+    id="answer-form"
+    hx-post="/api/test/answer"
+    hx-target="#feedback-container"
+    hx-swap="innerHTML"
+    class="mt-6 space-y-6"
+>
+    <input type="hidden" name="sessionId" value={sessionId} />
+    <input type="hidden" name="locale" value={locale} />
+    <input type="hidden" name="taskId" value={task.id} />
+
+    <div>
+        <label for="answer" class="sr-only">{t(locale, "yourAnswer")}</label>
+        <input
+            type="text"
+            id="answer"
+            name="answer"
+            class="input-field"
+            placeholder={t(locale, "yourAnswer")}
+            autocomplete="off"
+            inputmode="numeric"
+            required
+            autofocus
+        />
+    </div>
+
+    <button type="submit" class="btn-success w-full">
+        {t(locale, "checkAnswer")}
+    </button>
+</form>
+
+<div id="feedback-container" class="mt-6"></div>

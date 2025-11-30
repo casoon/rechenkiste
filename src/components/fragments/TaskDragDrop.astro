@@ -1,0 +1,185 @@
+---
+import type {
+    TaskInstance,
+    DragDropItem,
+    DragDropTarget,
+} from "@domain/task-system";
+import type { Locale } from "@i18n/translations";
+import { t } from "@i18n/translations";
+
+interface Props {
+    task: TaskInstance;
+    locale: Locale;
+    sessionId: string;
+}
+
+const { task, locale, sessionId } = Astro.props;
+const dragItems = task.dragItems || [];
+const dropTargets = task.dropTargets || [];
+---
+
+<div class="slide-up">
+    <div class="task-question">
+        <span class="text-gray-500 text-xl block mb-2"
+            >{t(locale, "matchItems")}</span
+        >
+        <span
+            class="text-2xl md:text-3xl font-bold"
+            set:html={task.question.replace(/\n/g, "<br>")}
+        />
+    </div>
+</div>
+
+<div
+    id="drag-drop-container"
+    class="mt-8"
+    x-data={`{
+    items: ${JSON.stringify(dragItems)},
+    targets: ${JSON.stringify(dropTargets)},
+    assignments: {},
+    dragging: null,
+
+    startDrag(itemId) {
+      this.dragging = itemId;
+    },
+
+    endDrag() {
+      this.dragging = null;
+    },
+
+    dropOnTarget(targetId) {
+      if (this.dragging) {
+        // Remove from previous target
+        Object.keys(this.assignments).forEach(key => {
+          if (this.assignments[key] === this.dragging) {
+            delete this.assignments[key];
+          }
+        });
+        // Assign to new target
+        this.assignments[targetId] = this.dragging;
+        this.dragging = null;
+      }
+    },
+
+    removeFromTarget(targetId) {
+      delete this.assignments[targetId];
+    },
+
+    getItemInTarget(targetId) {
+      const itemId = this.assignments[targetId];
+      if (!itemId) return null;
+      return this.items.find(i => i.id === itemId);
+    },
+
+    isItemAssigned(itemId) {
+      return Object.values(this.assignments).includes(itemId);
+    },
+
+    getAnswer() {
+      // Convert {targetId: itemId} to {itemId: targetId}
+      const answer = {};
+      Object.entries(this.assignments).forEach(([targetId, itemId]) => {
+        answer[itemId] = targetId;
+      });
+      return JSON.stringify(answer);
+    },
+
+    isComplete() {
+      return Object.keys(this.assignments).length === this.items.length;
+    }
+  }`}
+>
+    <!-- Drag Items -->
+    <div
+        class="flex flex-wrap gap-3 mb-6 p-4 bg-gray-100 rounded-xl min-h-[60px]"
+    >
+        <template x-for="item in items" :key="item.id">
+            <div
+                x-show="!isItemAssigned(item.id)"
+                class="drag-item px-4 py-2 bg-white rounded-lg border-2 border-gray-300 cursor-grab text-xl font-semibold shadow-sm hover:shadow-md transition-shadow"
+                :class="dragging === item.id && 'opacity-50 border-emerald-500'"
+                draggable="true"
+                @dragstart="startDrag(item.id)"
+                @dragend="endDrag()"
+                @touchstart="startDrag(item.id)"
+                @click="startDrag(item.id)"
+                x-text="item.content"
+            >
+            </div>
+        </template>
+        <div
+            x-show="items.every(i => isItemAssigned(i.id))"
+            class="text-gray-400 italic"
+        >
+            Alle Elemente zugeordnet
+        </div>
+    </div>
+
+    <!-- Drop Targets -->
+    <div class="grid grid-cols-2 gap-4">
+        <template x-for="target in targets" :key="target.id">
+            <div
+                class="drop-target p-4 rounded-xl border-2 border-dashed min-h-[80px] flex flex-col items-center justify-center transition-colors"
+                :class="dragging ? 'border-emerald-400 bg-emerald-50' : 'border-gray-300 bg-gray-50'"
+                @dragover.prevent
+                @drop="dropOnTarget(target.id)"
+                @click="dragging && dropOnTarget(target.id)"
+            >
+                <span class="text-sm text-gray-500 mb-2" x-text="target.label"
+                ></span>
+                <template x-if="getItemInTarget(target.id)">
+                    <div
+                        class="px-4 py-2 bg-emerald-100 rounded-lg border-2 border-emerald-400 text-xl font-semibold cursor-pointer hover:bg-red-100 hover:border-red-400 transition-colors"
+                        @click.stop="removeFromTarget(target.id)"
+                        x-text="getItemInTarget(target.id)?.content"
+                        title="Klicken zum Entfernen"
+                    >
+                    </div>
+                </template>
+                <template x-if="!getItemInTarget(target.id)">
+                    <span class="text-gray-400">—</span>
+                </template>
+            </div>
+        </template>
+    </div>
+
+    <!-- Submit Form -->
+    <form
+        id="answer-form"
+        hx-post="/api/test/answer"
+        hx-target="#feedback-container"
+        hx-swap="innerHTML"
+        class="mt-6"
+    >
+        <input type="hidden" name="sessionId" value={sessionId} />
+        <input type="hidden" name="locale" value={locale} />
+        <input type="hidden" name="taskId" value={task.id} />
+        <input type="hidden" name="answer" :value="getAnswer()" />
+
+        <button
+            type="submit"
+            class="btn-success w-full"
+            :disabled="!isComplete()"
+            :class="!isComplete() && 'opacity-50 cursor-not-allowed'"
+        >
+            {t(locale, "checkAnswer")}
+        </button>
+    </form>
+</div>
+
+<div id="feedback-container" class="mt-6"></div>
+
+<style>
+    .drag-item {
+        user-select: none;
+        touch-action: none;
+    }
+
+    .drag-item:active {
+        cursor: grabbing;
+    }
+
+    .drop-target {
+        transition: all 0.2s ease;
+    }
+</style>

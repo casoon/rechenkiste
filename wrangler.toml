@@ -1,0 +1,10 @@
+name = "rechenkiste"
+main = "./dist/_worker.js/index.js"
+compatibility_date = "2025-11-28"
+compatibility_flags = ["nodejs_compat"]
+
+routes = [{ pattern = "rechenkiste.casoon.dev", custom_domain = true }]
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"

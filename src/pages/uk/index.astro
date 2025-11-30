@@ -1,0 +1,66 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { t } from "@i18n/translations";
+import type { Locale } from "@i18n/translations";
+
+const locale: Locale = "uk";
+---
+
+<BaseLayout title={t(locale, "welcome")} locale={locale}>
+    <div
+        class="glass-card-strong p-8 md:p-12 max-w-lg w-full bounce-in"
+        transition:name="main-card"
+    >
+        <div class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-purple-700 mb-4">
+                {t(locale, "welcome")}
+            </h1>
+            <p class="text-xl text-gray-600">
+                {t(locale, "tagline")}
+            </p>
+        </div>
+
+        <form action="/api/test/start" method="POST" class="space-y-6">
+            <input type="hidden" name="locale" value={locale} />
+
+            <!-- Рівень класу -->
+            <div class="space-y-2">
+                <label
+                    for="grade"
+                    class="block text-lg font-bold text-gray-700"
+                >
+                    {t(locale, "chooseGrade")}
+                </label>
+                <select id="grade" name="grade" class="select-field" required>
+                    <option value="1">{t(locale, "grade1")}</option>
+                    <option value="2">{t(locale, "grade2")}</option>
+                    <option value="3">{t(locale, "grade3")}</option>
+                    <option value="4">{t(locale, "grade4")}</option>
+                    <option value="5">{t(locale, "grade5")}</option>
+                </select>
+            </div>
+
+            <!-- Кількість завдань -->
+            <div class="space-y-2">
+                <label
+                    for="count"
+                    class="block text-lg font-bold text-gray-700"
+                >
+                    {t(locale, "chooseCount")}
+                </label>
+                <select id="count" name="count" class="select-field" required>
+                    <option value="10">10 {t(locale, "tasks")}</option>
+                    <option value="20">20 {t(locale, "tasks")}</option>
+                    <option value="30">30 {t(locale, "tasks")}</option>
+                </select>
+            </div>
+
+            <!-- Кнопка старту -->
+            <div class="pt-4">
+                <button type="submit" class="btn-primary w-full">
+                    {t(locale, "startTest")} 🚀
+                </button>
+            </div>
+        </form>
+    </div>
+</BaseLayout>

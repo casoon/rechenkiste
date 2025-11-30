@@ -1,0 +1,290 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { getLocaleFromUrl } from "@i18n/translations";
+import type { Locale } from "@i18n/translations";
+
+const locale: Locale = getLocaleFromUrl(Astro.url);
+
+const content = {
+    de: {
+        title: "Technik & AHA-Stack",
+        subtitle: "Wie die Rechenkiste gebaut wurde",
+        intro: "Die Rechenkiste ist eine Demo-Anwendung für den AHA-Stack und den @casoon/fragment-renderer. Sie zeigt, wie moderne Web-Anwendungen mit minimalem JavaScript und maximaler Performance gebaut werden können.",
+
+        ahaTitle: "Was ist der AHA-Stack?",
+        ahaDesc: "Der AHA-Stack kombiniert drei leichtgewichtige Technologien:",
+        ahaAstro:
+            "Astro - Ein modernes Web-Framework für content-fokussierte Websites mit Zero-JS-Default",
+        ahaHtmx:
+            "HTMX - Ermöglicht dynamische Interaktionen durch HTML-Attribute statt JavaScript",
+        ahaAlpine:
+            "Alpine.js - Leichtgewichtiges JavaScript für reaktive UI-Komponenten",
+
+        fragmentTitle: "@casoon/fragment-renderer",
+        fragmentDesc:
+            "Der Fragment-Renderer ist eine Bibliothek von casoon, die das serverseitige Rendern von Astro-Komponenten als HTML-Fragmente ermöglicht. Dies ist ideal für HTMX-basierte Anwendungen.",
+        fragmentFeatures: "Features:",
+        fragmentF1: "Serverseitiges Rendering von Astro-Komponenten",
+        fragmentF2: "HTMX-Integration mit automatischen Response-Headers",
+        fragmentF3: "Preset für den AHA-Stack",
+        fragmentF4: "TypeScript-Support",
+
+        exampleTitle: "Beispiel: Feedback-Fragment",
+        exampleDesc:
+            "So wird in der Rechenkiste das Feedback nach einer Antwort gerendert:",
+
+        taskSystemTitle: "Das Aufgaben-System",
+        taskSystemDesc:
+            "Die Rechenkiste verwendet ein modulares Aufgaben-System mit:",
+        taskS1: "Einheitliches Interface für alle Aufgabentypen",
+        taskS2: "Selbst-validierende Aufgaben mit Hints",
+        taskS3: "SVG-Visualisierungen für Geometrie und Brüche",
+        taskS4: "Multiple-Choice und Drag-and-Drop Support",
+        taskS5: "Adaptive Schwierigkeit und Fehler-Wiederholung",
+
+        linksTitle: "Links",
+        linkCasoon: "casoon.de - Web-Entwicklung & Design",
+        linkGithub: "GitHub Repository",
+        linkNpm: "@casoon/fragment-renderer auf npm",
+    },
+    en: {
+        title: "Tech & AHA-Stack",
+        subtitle: "How the Math Box was built",
+        intro: "The Math Box is a demo application for the AHA-Stack and @casoon/fragment-renderer. It demonstrates how modern web applications can be built with minimal JavaScript and maximum performance.",
+
+        ahaTitle: "What is the AHA-Stack?",
+        ahaDesc: "The AHA-Stack combines three lightweight technologies:",
+        ahaAstro:
+            "Astro - A modern web framework for content-focused websites with zero-JS default",
+        ahaHtmx:
+            "HTMX - Enables dynamic interactions through HTML attributes instead of JavaScript",
+        ahaAlpine:
+            "Alpine.js - Lightweight JavaScript for reactive UI components",
+
+        fragmentTitle: "@casoon/fragment-renderer",
+        fragmentDesc:
+            "The Fragment Renderer is a library from casoon that enables server-side rendering of Astro components as HTML fragments. This is ideal for HTMX-based applications.",
+        fragmentFeatures: "Features:",
+        fragmentF1: "Server-side rendering of Astro components",
+        fragmentF2: "HTMX integration with automatic response headers",
+        fragmentF3: "Preset for the AHA-Stack",
+        fragmentF4: "TypeScript support",
+
+        exampleTitle: "Example: Feedback Fragment",
+        exampleDesc:
+            "This is how feedback is rendered in the Math Box after an answer:",
+
+        taskSystemTitle: "The Task System",
+        taskSystemDesc: "The Math Box uses a modular task system with:",
+        taskS1: "Unified interface for all task types",
+        taskS2: "Self-validating tasks with hints",
+        taskS3: "SVG visualizations for geometry and fractions",
+        taskS4: "Multiple-choice and drag-and-drop support",
+        taskS5: "Adaptive difficulty and error retry",
+
+        linksTitle: "Links",
+        linkCasoon: "casoon.de - Web Development & Design",
+        linkGithub: "GitHub Repository",
+        linkNpm: "@casoon/fragment-renderer on npm",
+    },
+    uk: {
+        title: "Техніка & AHA-Stack",
+        subtitle: "Як була побудована Математична Скринька",
+        intro: "Математична Скринька - це демо-додаток для AHA-Stack та @casoon/fragment-renderer. Вона показує, як можна створювати сучасні веб-додатки з мінімальним JavaScript та максимальною продуктивністю.",
+
+        ahaTitle: "Що таке AHA-Stack?",
+        ahaDesc: "AHA-Stack поєднує три легкі технології:",
+        ahaAstro:
+            "Astro - Сучасний веб-фреймворк для сайтів з фокусом на контент з нульовим JS за замовчуванням",
+        ahaHtmx:
+            "HTMX - Забезпечує динамічні взаємодії через HTML-атрибути замість JavaScript",
+        ahaAlpine:
+            "Alpine.js - Легкий JavaScript для реактивних UI-компонентів",
+
+        fragmentTitle: "@casoon/fragment-renderer",
+        fragmentDesc:
+            "Fragment Renderer - це бібліотека від casoon, яка дозволяє серверний рендеринг Astro-компонентів як HTML-фрагментів. Це ідеально підходить для HTMX-додатків.",
+        fragmentFeatures: "Можливості:",
+        fragmentF1: "Серверний рендеринг Astro-компонентів",
+        fragmentF2: "HTMX-інтеграція з автоматичними заголовками відповіді",
+        fragmentF3: "Preset для AHA-Stack",
+        fragmentF4: "TypeScript підтримка",
+
+        exampleTitle: "Приклад: Фрагмент зворотного зв'язку",
+        exampleDesc:
+            "Ось як рендериться зворотний зв'язок у Математичній Скриньці після відповіді:",
+
+        taskSystemTitle: "Система завдань",
+        taskSystemDesc:
+            "Математична Скринька використовує модульну систему завдань з:",
+        taskS1: "Єдиний інтерфейс для всіх типів завдань",
+        taskS2: "Самоперевіряючі завдання з підказками",
+        taskS3: "SVG-візуалізації для геометрії та дробів",
+        taskS4: "Підтримка множинного вибору та drag-and-drop",
+        taskS5: "Адаптивна складність та повторення помилок",
+
+        linksTitle: "Посилання",
+        linkCasoon: "casoon.de - Веб-розробка та дизайн",
+        linkGithub: "GitHub репозиторій",
+        linkNpm: "@casoon/fragment-renderer на npm",
+    },
+};
+
+const t = content[locale];
+---
+
+<BaseLayout title={t.title} locale={locale}>
+    <div class="glass-card-strong p-6 md:p-10 max-w-4xl w-full">
+        <h1 class="text-3xl md:text-4xl font-bold text-purple-700 mb-2">
+            {t.title}
+        </h1>
+        <p class="text-xl text-gray-600 mb-8">{t.subtitle}</p>
+
+        <p class="text-gray-700 mb-8 text-lg">{t.intro}</p>
+
+        <!-- AHA-Stack -->
+        <section class="mb-10">
+            <h2 class="text-2xl font-bold text-purple-600 mb-4">
+                {t.ahaTitle}
+            </h2>
+            <p class="text-gray-700 mb-4">{t.ahaDesc}</p>
+
+            <div class="grid md:grid-cols-3 gap-4">
+                <div
+                    class="bg-orange-50 p-4 rounded-xl border-2 border-orange-200"
+                >
+                    <h3 class="font-bold text-orange-700 text-lg">Astro</h3>
+                    <p class="text-sm text-gray-600 mt-2">{t.ahaAstro}</p>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
+                    <h3 class="font-bold text-blue-700 text-lg">HTMX</h3>
+                    <p class="text-sm text-gray-600 mt-2">{t.ahaHtmx}</p>
+                </div>
+                <div class="bg-cyan-50 p-4 rounded-xl border-2 border-cyan-200">
+                    <h3 class="font-bold text-cyan-700 text-lg">Alpine.js</h3>
+                    <p class="text-sm text-gray-600 mt-2">{t.ahaAlpine}</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Fragment Renderer -->
+        <section class="mb-10">
+            <h2 class="text-2xl font-bold text-purple-600 mb-4">
+                {t.fragmentTitle}
+            </h2>
+            <p class="text-gray-700 mb-4">{t.fragmentDesc}</p>
+
+            <p class="font-semibold text-gray-700 mb-2">{t.fragmentFeatures}</p>
+            <ul class="list-disc list-inside text-gray-600 space-y-1 mb-6">
+                <li>{t.fragmentF1}</li>
+                <li>{t.fragmentF2}</li>
+                <li>{t.fragmentF3}</li>
+                <li>{t.fragmentF4}</li>
+            </ul>
+
+            <h3 class="text-xl font-bold text-purple-500 mb-3">
+                {t.exampleTitle}
+            </h3>
+            <p class="text-gray-600 mb-3">{t.exampleDesc}</p>
+
+            <pre
+                class="bg-gray-900 text-gray-100 p-4 rounded-xl overflow-x-auto text-sm"><code>{`// task-renderer.ts
+import { createAstroRuntime } from "@casoon/fragment-renderer";
+import { ahaStackPreset } from "@casoon/fragment-renderer/presets/aha-stack";
+
+const runtime = createAstroRuntime({
+  ...ahaStackPreset({ locale, htmxHeaders: true }),
+  components: [
+    { id: "feedback-correct", loader: () => import("./FeedbackCorrect.astro") },
+    { id: "feedback-incorrect", loader: () => import("./FeedbackIncorrect.astro") },
+  ],
+});
+
+// Render feedback as HTML fragment
+const html = await runtime.renderToString({
+  componentId: result.isCorrect ? "feedback-correct" : "feedback-incorrect",
+  props: { locale, nextUrl, isComplete },
+});`}</code></pre>
+        </section>
+
+        <!-- Task System -->
+        <section class="mb-10">
+            <h2 class="text-2xl font-bold text-purple-600 mb-4">
+                {t.taskSystemTitle}
+            </h2>
+            <p class="text-gray-700 mb-4">{t.taskSystemDesc}</p>
+
+            <ul class="space-y-2">
+                <li class="flex items-start gap-2">
+                    <span class="text-green-500 font-bold">•</span>
+                    <span class="text-gray-600">{t.taskS1}</span>
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="text-green-500 font-bold">•</span>
+                    <span class="text-gray-600">{t.taskS2}</span>
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="text-green-500 font-bold">•</span>
+                    <span class="text-gray-600">{t.taskS3}</span>
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="text-green-500 font-bold">•</span>
+                    <span class="text-gray-600">{t.taskS4}</span>
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="text-green-500 font-bold">•</span>
+                    <span class="text-gray-600">{t.taskS5}</span>
+                </li>
+            </ul>
+
+            <pre
+                class="bg-gray-900 text-gray-100 p-4 rounded-xl overflow-x-auto text-sm mt-6"><code>{`// Unified Task Interface
+interface TaskInstance {
+  id: string;
+  question: string;
+  validate(answer: string): ValidationResult;
+  getHint(): string;
+  getCorrectAnswer(): string | number;
+}
+
+// Self-validating task
+const result = task.validate(userAnswer);
+if (!result.isCorrect) {
+  console.log(result.hint);  // "Der kleine Zeiger zeigt die Stunde..."
+}`}</code></pre>
+        </section>
+
+        <!-- Links -->
+        <section class="border-t-2 border-purple-100 pt-6">
+            <h2 class="text-xl font-bold text-purple-600 mb-4">
+                {t.linksTitle}
+            </h2>
+            <div class="flex flex-wrap gap-4">
+                <a
+                    href="https://www.casoon.de"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors"
+                >
+                    {t.linkCasoon}
+                </a>
+                <a
+                    href="https://github.com/casoon/rechenkiste"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                    {t.linkGithub}
+                </a>
+                <a
+                    href="https://www.npmjs.com/package/@casoon/fragment-renderer"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                >
+                    {t.linkNpm}
+                </a>
+            </div>
+        </section>
+    </div>
+</BaseLayout>

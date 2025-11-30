@@ -1,0 +1,131 @@
+---
+import { ViewTransitions } from "astro:transitions";
+import "@styles/base.css";
+import type { Locale } from "@i18n/translations";
+import { t, getLocalizedPath } from "@i18n/translations";
+
+interface Props {
+    title: string;
+    locale?: Locale;
+}
+
+const { title, locale = "de" } = Astro.props;
+
+const locales: { code: Locale; label: string; flag: string }[] = [
+    { code: "de", label: "Deutsch", flag: "🇩🇪" },
+    { code: "en", label: "English", flag: "🇬🇧" },
+    { code: "uk", label: "Українська", flag: "🇺🇦" },
+];
+
+const currentPath = Astro.url.pathname.replace(/^\/(en|uk)/, "") || "/";
+---
+
+<!doctype html>
+<html lang={locale}>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="description" content={t(locale, "tagline")} />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <title>{title} - {t(locale, "appName")}</title>
+        <ViewTransitions />
+        <script is:inline src="https://unpkg.com/htmx.org@2.0.0"></script>
+        <script
+            is:inline
+            src="https://unpkg.com/htmx-ext-view-transitions@2.0.0/view-transitions.js"
+        ></script>
+        <script
+            is:inline
+            defer
+            src="https://unpkg.com/alpinejs@3.14.0/dist/cdn.min.js"></script>
+        <script is:inline>
+            // Re-initialize HTMX after View Transitions
+            document.addEventListener("astro:page-load", () => {
+                if (window.htmx) {
+                    htmx.process(document.body);
+                }
+            });
+        </script>
+    </head>
+    <body class="min-h-screen" hx-ext="view-transitions">
+        <div class="min-h-screen flex flex-col">
+            <!-- Header -->
+            <header class="p-4">
+                <div
+                    class="max-w-4xl mx-auto flex justify-between items-center"
+                >
+                    <a
+                        href={getLocalizedPath("/", locale)}
+                        class="flex items-center gap-3 group"
+                    >
+                        <span class="text-4xl">🧮</span>
+                        <span
+                            class="text-2xl font-bold text-purple-700 group-hover:text-purple-900 transition-colors"
+                        >
+                            {t(locale, "appName")}
+                        </span>
+                    </a>
+
+                    <!-- Language Switcher -->
+                    <nav
+                        class="language-switcher"
+                        aria-label={t(locale, "language")}
+                    >
+                        {
+                            locales.map((loc) => (
+                                <a
+                                    href={getLocalizedPath(
+                                        currentPath,
+                                        loc.code,
+                                    )}
+                                    class:list={[
+                                        "language-btn",
+                                        { active: locale === loc.code },
+                                    ]}
+                                    aria-current={
+                                        locale === loc.code ? "page" : undefined
+                                    }
+                                >
+                                    <span class="mr-1">{loc.flag}</span>
+                                    <span class="hidden sm:inline">
+                                        {loc.label}
+                                    </span>
+                                </a>
+                            ))
+                        }
+                    </nav>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main
+                class="flex-1 flex items-center justify-center p-4"
+                transition:animate="fade"
+            >
+                <slot />
+            </main>
+
+            <!-- Footer -->
+            <footer class="p-4 text-center text-gray-600 text-sm space-y-2">
+                <p>Made with ❤️ for kids</p>
+                <p class="flex items-center justify-center gap-4">
+                    <a
+                        href="https://www.casoon.de"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="hover:text-purple-600 transition-colors"
+                    >
+                        casoon.de
+                    </a>
+                    <span class="text-gray-300">|</span>
+                    <a
+                        href={getLocalizedPath("/technik", locale)}
+                        class="hover:text-purple-600 transition-colors"
+                    >
+                        {t(locale, "techInfo")}
+                    </a>
+                </p>
+            </footer>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,66 @@
+---
+import type { TaskInstance, ChoiceOption } from "@domain/task-system";
+import type { Locale } from "@i18n/translations";
+import { t } from "@i18n/translations";
+
+interface Props {
+  task: TaskInstance;
+  locale: Locale;
+  sessionId: string;
+}
+
+const { task, locale, sessionId } = Astro.props;
+const choices = task.choices || [];
+---
+
+<div class="slide-up">
+  <div class="task-question">
+    <span class="text-gray-500 text-xl block mb-2">{t(locale, "calculate")}</span>
+    <span class="text-3xl md:text-4xl font-bold" set:html={task.question.replace(/\n/g, "<br>")} />
+  </div>
+</div>
+
+<form
+  id="answer-form"
+  hx-post="/api/test/answer"
+  hx-target="#feedback-container"
+  hx-swap="innerHTML"
+  class="mt-8 space-y-4"
+  x-data="{ selected: '' }"
+>
+  <input type="hidden" name="sessionId" value={sessionId} />
+  <input type="hidden" name="locale" value={locale} />
+  <input type="hidden" name="taskId" value={task.id} />
+  <input type="hidden" name="answer" x-model="selected" />
+
+  <div class="grid grid-cols-2 gap-3">
+    {choices.map((choice: ChoiceOption) => (
+      <button
+        type="button"
+        class="choice-button p-4 text-2xl font-bold rounded-xl border-2 transition-all duration-200"
+        :class={`selected === '${choice.id}' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'`}
+        @click={`selected = '${choice.id}'`}
+      >
+        {choice.label}
+      </button>
+    ))}
+  </div>
+
+  <button
+    type="submit"
+    class="btn-success w-full mt-6"
+    :disabled="!selected"
+    :class="!selected && 'opacity-50 cursor-not-allowed'"
+  >
+    {t(locale, "checkAnswer")}
+  </button>
+</form>
+
+<div id="feedback-container" class="mt-6"></div>
+
+<style>
+  .choice-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+  }
+</style>
