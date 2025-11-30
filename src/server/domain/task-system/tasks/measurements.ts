@@ -246,8 +246,7 @@ function formatCents(cents: number, locale: Locale): string {
  */
 class MoneyTask extends BaseTask<MoneyData> {
   validate(userAnswer: string): ValidationResult {
-    // Akzeptiere verschiedene Formate: "1,50", "1.50", "150", "1 Euro 50 Cent"
-    let parsed: number | null = null;
+    // Akzeptiere verschiedene Formate: "1,50", "1.50", "7,60", "7.6", "150"
     const normalized = userAnswer
       .toLowerCase()
       .trim()
@@ -258,26 +257,12 @@ class MoneyTask extends BaseTask<MoneyData> {
       .trim();
 
     // Versuche als Dezimalzahl zu parsen
-    const num = parseFloat(normalized);
-    if (!isNaN(num)) {
-      // Wenn < 10 und keine Dezimalstelle, könnte es Euro sein
-      if (num < 100 && !normalized.includes(".")) {
-        // Könnte Cent oder Euro sein - prüfe beide
-        if (Math.abs(num - this.data.answer) < 0.01) {
-          parsed = num;
-        } else if (Math.abs(num * 100 - this.data.answer * 100) < 1) {
-          parsed = num;
-        } else {
-          parsed = num;
-        }
-      } else {
-        parsed = num;
-      }
-    }
-
+    const parsed = parseFloat(normalized);
     const correctAnswer = this.data.answer;
-    const isCorrect =
-      parsed !== null && Math.abs(parsed - correctAnswer) < 0.01;
+
+    // Vergleich mit Toleranz für Fließkomma-Ungenauigkeiten
+    // 7.60 und 7.6 sind gleich, ebenso 7,60 (wird zu 7.60)
+    const isCorrect = !isNaN(parsed) && Math.abs(parsed - correctAnswer) < 0.01;
 
     return {
       isCorrect,
@@ -433,7 +418,7 @@ class UnitConversionTask extends BaseTask<UnitConversionData> {
 export const moneyAddSimple: TaskDefinition<MoneyData> = {
   typeId: "money-add-simple",
   category: "measurement",
-  grade: 2,
+  grade: 1,
   description: "Geld addieren (einfach)",
 
   generate(locale: Locale): TaskInstance<MoneyData> {
@@ -451,6 +436,7 @@ export const moneyAddSimple: TaskDefinition<MoneyData> = {
       locale,
       question: t.add(`${a} €`, `${b} €`),
       data: { euros: answer, cents: 0, answer, operation: "add" },
+      inputLabel: "€",
     });
   },
 };
@@ -487,6 +473,7 @@ export const moneyAddWithCents: TaskDefinition<MoneyData> = {
         answer,
         operation: "add",
       },
+      inputLabel: "€",
     });
   },
 };
@@ -511,6 +498,7 @@ export const moneyChange: TaskDefinition<MoneyData> = {
       locale,
       question: t.change(`${paid} €`, `${cost} €`),
       data: { euros: answer, cents: 0, answer, operation: "change" },
+      inputLabel: "€",
     });
   },
 };

@@ -124,6 +124,32 @@ function deserializeTask(data: SerializedTask): TaskInstance {
     validate: (answer: string): ValidationResult => {
       const correctAnswer = data.correctAnswer;
 
+      // Für Multiple-Choice: Vergleiche Choice-ID mit korrekter Choice
+      if (data.inputType === "multiple-choice" && data.choices) {
+        // Finde die ausgewählte Choice
+        const selectedChoice = data.choices.find((c) => c.id === answer);
+        // Finde die korrekte Choice (deren value/label mit correctAnswer übereinstimmt)
+        const correctChoice = data.choices.find(
+          (c) =>
+            String(c.value).toLowerCase() ===
+              String(correctAnswer).toLowerCase() ||
+            String(c.label).toLowerCase() ===
+              String(correctAnswer).toLowerCase(),
+        );
+
+        const isCorrect =
+          selectedChoice &&
+          correctChoice &&
+          selectedChoice.id === correctChoice.id;
+
+        return {
+          isCorrect: !!isCorrect,
+          correctAnswer,
+          userAnswer: selectedChoice?.label || answer,
+          hint: isCorrect ? undefined : data.hint,
+        };
+      }
+
       // Für Drag-Drop: JSON-Vergleich
       if (data.inputType === "drag-drop" && data.dragItems) {
         try {
@@ -152,10 +178,56 @@ function deserializeTask(data: SerializedTask): TaskInstance {
         }
       }
 
-      // Standard-Vergleich
-      const normalizedAnswer = answer.trim().toLowerCase();
-      const normalizedCorrect = String(correctAnswer).trim().toLowerCase();
-      const isCorrect = normalizedAnswer === normalizedCorrect;
+      // Für Geld-Aufgaben: Numerischer Vergleich mit Komma/Punkt-Toleranz
+      if (data.typeId?.includes("money")) {
+        const normalizedAnswer = answer
+          .trim()
+          .toLowerCase()
+          .replace("€", "")
+          .replace("euro", "")
+          .replace(",", ".")
+          .trim();
+        const parsed = parseFloat(normalizedAnswer);
+        const correct =
+          typeof correctAnswer === "number"
+            ? correctAnswer
+            : parseFloat(String(correctAnswer).replace(",", "."));
+        const isCorrect = !isNaN(parsed) && Math.abs(parsed - correct) < 0.01;
+
+        // Formatiere correctAnswer für Anzeige
+        const displayCorrect =
+          typeof correctAnswer === "number"
+            ? correctAnswer.toFixed(2).replace(".", ",") + " €"
+            : correctAnswer;
+
+        return {
+          isCorrect,
+          correctAnswer: displayCorrect,
+          userAnswer: answer,
+          hint: isCorrect ? undefined : data.hint,
+        };
+      }
+
+      // Für andere numerische Aufgaben: Komma/Punkt-Toleranz
+      const normalizedAnswer = answer.trim().toLowerCase().replace(",", ".");
+      const normalizedCorrect = String(correctAnswer)
+        .trim()
+        .toLowerCase()
+        .replace(",", ".");
+
+      // Versuche numerischen Vergleich
+      const parsedAnswer = parseFloat(normalizedAnswer);
+      const parsedCorrect = parseFloat(normalizedCorrect);
+
+      let isCorrect: boolean;
+      if (!isNaN(parsedAnswer) && !isNaN(parsedCorrect)) {
+        // Numerischer Vergleich mit kleiner Toleranz
+        isCorrect = Math.abs(parsedAnswer - parsedCorrect) < 0.001;
+      } else {
+        // String-Vergleich als Fallback
+        isCorrect = normalizedAnswer === normalizedCorrect;
+      }
+
       return {
         isCorrect,
         correctAnswer,

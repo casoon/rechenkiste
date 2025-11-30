@@ -14,23 +14,38 @@ const { task, locale, sessionId } = Astro.props;
 // Prüfe ob die Frage SVG enthält
 const hasSvg = task.question.includes("<svg");
 
-// Prüfe ob Dezimal-Eingabe erwartet wird (hat Vorrang)
+// Prüfe ob Uhrzeit-Eingabe erwartet wird
+const needsTimeInput =
+    task.typeId?.includes("clock") ||
+    task.typeId?.includes("time") ||
+    task.question.toLowerCase().includes("wie spät") ||
+    task.question.toLowerCase().includes("uhrzeit") ||
+    task.question.toLowerCase().includes("what time");
+
+// Prüfe ob Dezimal-Eingabe erwartet wird
 const needsDecimalInput =
-    task.typeId?.includes("to-decimal") || // "Bruch als Dezimalzahl"
-    task.typeId?.includes("decimal") || // Dezimalzahlen-Aufgaben
-    task.question.toLowerCase().includes("dezimalzahl");
+    !needsTimeInput &&
+    (task.typeId?.includes("to-decimal") || // "Bruch als Dezimalzahl"
+        task.typeId?.includes("decimal") || // Dezimalzahlen-Aufgaben
+        task.question.toLowerCase().includes("dezimalzahl"));
 
 // Prüfe ob Bruch-Eingabe nötig ist (Antwort enthält /)
 const needsFractionInput =
-    !needsDecimalInput && // Dezimal hat Vorrang
+    !needsDecimalInput &&
+    !needsTimeInput &&
     (task.question.includes("/") || // Brüche wie 1/5
         task.typeId?.includes("fraction") ||
         task.typeId === "percent-identify"); // "Was ist X% als Bruch?"
 
 // Erlaubte Zeichen für die Eingabe als Regex-Pattern
+// Uhrzeiten: 0-9 und :
 // Brüche: nur 0-9 und /
 // Zahlen: 0-9, Komma, Punkt, Minus
-const allowedCharsRegex = needsFractionInput ? /[^0-9/]/g : /[^0-9,.\-]/g;
+const allowedCharsRegex = needsTimeInput
+    ? /[^0-9:]/g
+    : needsFractionInput
+      ? /[^0-9/]/g
+      : /[^0-9,.\-]/g;
 
 // Trenne SVG vom Text wenn vorhanden
 let svgPart = "";
@@ -47,13 +62,6 @@ if (hasSvg) {
 
 <div class="slide-up">
     <div class="task-question">
-        {
-            !hasSvg && (
-                <span class="text-gray-500 text-xl block mb-2">
-                    {t(locale, "calculate")}
-                </span>
-            )
-        }
         {
             hasSvg && svgPart && (
                 <div class="bg-white/80 rounded-xl p-4 mb-4">

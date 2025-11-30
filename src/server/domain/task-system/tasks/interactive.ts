@@ -107,7 +107,7 @@ class MultipleChoiceTask extends BaseTask<MultipleChoiceData> {
   validate(userAnswer: string): ValidationResult {
     const isCorrect = userAnswer === this.data.correctOptionId;
     const correctOption = this.choices?.find(
-      (c) => c.id === this.data.correctOptionId
+      (c) => c.id === this.data.correctOptionId,
     );
 
     return {
@@ -148,7 +148,7 @@ class DragDropTask extends BaseTask<DragDropData> {
 
     const correctMapping = this.data.correctMapping;
     const isCorrect = Object.keys(correctMapping).every(
-      (key) => userMapping[key] === correctMapping[key]
+      (key) => userMapping[key] === correctMapping[key],
     );
 
     return {
@@ -211,7 +211,7 @@ export const multipleChoiceAdd: TaskDefinition<MultipleChoiceData> = {
       category: this.category,
       grade: this.grade,
       locale,
-      question: `${t.calculate} ${a} + ${b} = ?`,
+      question: `${a} + ${b} = ?`,
       data: { correctOptionId: correctId, answer: correctAnswer },
       inputType: "multiple-choice",
       choices,
@@ -265,7 +265,7 @@ export const multipleChoiceMult: TaskDefinition<MultipleChoiceData> = {
       category: this.category,
       grade: this.grade,
       locale,
-      question: `${t.calculate} ${a} × ${b} = ?`,
+      question: `${a} × ${b} = ?`,
       data: { correctOptionId: correctId, answer: correctAnswer },
       inputType: "multiple-choice",
       choices,
@@ -352,7 +352,7 @@ export const dragDropOrder: TaskDefinition<DragDropData> = {
         id: `num-${n}`,
         content: String(n),
         correctTarget: `pos-${sorted.indexOf(n)}`,
-      }))
+      })),
     );
 
     // Targets sind die Positionen
@@ -432,7 +432,7 @@ export const dragDropMatchOperations: TaskDefinition<DragDropData> = {
         id: `op-${i}`,
         content: op.expr,
         correctTarget: `res-${op.result}`,
-      }))
+      })),
     );
 
     // Targets sind die Ergebnisse
@@ -440,7 +440,7 @@ export const dragDropMatchOperations: TaskDefinition<DragDropData> = {
       operations.map((op) => ({
         id: `res-${op.result}`,
         label: String(op.result),
-      }))
+      })),
     );
 
     // Mapping erstellen

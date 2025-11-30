@@ -653,7 +653,7 @@ export const negativeAddition: TaskDefinition<NegativeNumberData> = {
       category: this.category,
       grade: this.grade,
       locale,
-      question: `${t.calculate}\n${a} + ${bStr} = ?`,
+      question: `${a} + ${bStr} = ?`,
       data: { a, b, operator: "+", answer },
     });
   },
@@ -687,7 +687,7 @@ export const negativeSubtraction: TaskDefinition<NegativeNumberData> = {
       category: this.category,
       grade: this.grade,
       locale,
-      question: `${t.calculate}\n${a} - ${bStr} = ?`,
+      question: `${a} - ${bStr} = ?`,
       data: { a, b, operator: "-", answer },
     });
   },

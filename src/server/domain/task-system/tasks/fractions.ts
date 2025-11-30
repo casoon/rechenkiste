@@ -406,7 +406,7 @@ export const fractionAddSameDenom: TaskDefinition<FractionData> = {
       category: this.category,
       grade: this.grade,
       locale,
-      question: `${t.add} ${num1}/${denominator} + ${num2}/${denominator} = ?`,
+      question: `${num1}/${denominator} + ${num2}/${denominator} = ?`,
       data: { numerator: resultNum, denominator, answer, type: "add" },
     });
   },
@@ -434,7 +434,7 @@ export const decimalAdd: TaskDefinition<DecimalData> = {
       category: this.category,
       grade: this.grade,
       locale,
-      question: `${t.add} ${aStr} + ${bStr} = ?`,
+      question: `${aStr} + ${bStr} = ?`,
       data: { value: a + b, answer, operation: "add" },
     });
   },

@@ -111,8 +111,10 @@ function generateClockSvg(hours: number, minutes: number): string {
   const minuteHandLength = 60;
   const hourHandLength = 45;
 
-  const minuteX = cx + minuteHandLength * Math.cos((minuteAngle * Math.PI) / 180);
-  const minuteY = cy + minuteHandLength * Math.sin((minuteAngle * Math.PI) / 180);
+  const minuteX =
+    cx + minuteHandLength * Math.cos((minuteAngle * Math.PI) / 180);
+  const minuteY =
+    cy + minuteHandLength * Math.sin((minuteAngle * Math.PI) / 180);
   const hourX = cx + hourHandLength * Math.cos((hourAngle * Math.PI) / 180);
   const hourY = cy + hourHandLength * Math.sin((hourAngle * Math.PI) / 180);
 
@@ -361,7 +363,9 @@ export const clockAnyTime: TaskDefinition<ClockData> = {
 
     const hours = randomInt(1, 12);
     // 5-Minuten-Schritte für einfacheres Ablesen
-    const minutes = randomChoice([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]);
+    const minutes = randomChoice([
+      0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55,
+    ]);
     const svg = generateClockSvg(hours, minutes);
     const answer = formatTime(hours, minutes);
 
@@ -406,6 +410,7 @@ export const timeSpanSimple: TaskDefinition<TimeSpanData> = {
       grade: this.grade,
       locale,
       question: `${question} ${t.inHours}`,
+      inputLabel: locale === "en" ? "h" : locale === "uk" ? "год" : "Std.",
       data: {
         startHours,
         startMinutes: 0,
@@ -449,6 +454,7 @@ export const timeSpanMinutes: TaskDefinition<TimeSpanData> = {
       grade: this.grade,
       locale,
       question: `${question} ${t.inMinutes}`,
+      inputLabel: locale === "en" ? "min" : locale === "uk" ? "хв" : "Min.",
       data: {
         startHours,
         startMinutes,
@@ -472,10 +478,10 @@ export const timeSpanMixed: TaskDefinition<TimeSpanData> = {
 
     // Realistische Zeitspannen (z.B. Schulstunden, Pausen)
     const scenarios = [
-      { start: [8, 0], end: [8, 45], answer: 45 },   // Schulstunde
+      { start: [8, 0], end: [8, 45], answer: 45 }, // Schulstunde
       { start: [9, 30], end: [10, 15], answer: 45 }, // Schulstunde
       { start: [10, 15], end: [10, 30], answer: 15 }, // Pause
-      { start: [12, 0], end: [13, 0], answer: 60 },  // Mittagspause
+      { start: [12, 0], end: [13, 0], answer: 60 }, // Mittagspause
       { start: [14, 0], end: [15, 30], answer: 90 }, // Nachmittag
     ];
 
@@ -496,6 +502,7 @@ export const timeSpanMixed: TaskDefinition<TimeSpanData> = {
       grade: this.grade,
       locale,
       question: `${question} ${t.inMinutes}`,
+      inputLabel: locale === "en" ? "min" : locale === "uk" ? "хв" : "Min.",
       data: {
         startHours,
         startMinutes,
