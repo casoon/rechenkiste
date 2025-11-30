@@ -197,47 +197,103 @@ function generateCountingSvg(
   return `<svg viewBox="0 0 ${width} ${height}" class="w-full h-32 bg-white rounded-lg border">${shapesSvg}</svg>`;
 }
 
-// Symmetrie-SVGs
+// Symmetrie-SVGs - zeigt immer eine einzelne Form
 function generateSymmetrySvg(isSymmetric: boolean): {
   svg: string;
   axisType: "vertical" | "horizontal" | "both";
 } {
   const width = 200;
   const height = 150;
+  const cx = 100;
+  const cy = 75;
 
   if (isSymmetric) {
-    // Symmetrische Formen
-    const type = randomChoice(["vertical", "horizontal", "both"] as const);
+    // Symmetrische Einzelformen
+    const shapeType = randomChoice([
+      "circle",
+      "square",
+      "rectangle",
+      "diamond",
+      "heart",
+      "arrow",
+    ] as const);
     let shape: string;
+    let axisType: "vertical" | "horizontal" | "both" = "vertical";
 
-    if (type === "vertical" || type === "both") {
-      // Schmetterling-ähnliche Form
-      shape = `
-        <ellipse cx="70" cy="75" rx="30" ry="40" fill="#4ecdc4" stroke="#333" stroke-width="2"/>
-        <ellipse cx="130" cy="75" rx="30" ry="40" fill="#4ecdc4" stroke="#333" stroke-width="2"/>
-        <rect x="95" y="55" width="10" height="40" fill="#333"/>
-        <line x1="100" y1="20" x2="100" y2="130" stroke="#999" stroke-width="1" stroke-dasharray="5,5"/>
-      `;
-    } else {
-      // Horizontal symmetrisch
-      shape = `
-        <ellipse cx="100" cy="55" rx="50" ry="25" fill="#ff6b6b" stroke="#333" stroke-width="2"/>
-        <ellipse cx="100" cy="95" rx="50" ry="25" fill="#ff6b6b" stroke="#333" stroke-width="2"/>
-        <line x1="30" y1="75" x2="170" y2="75" stroke="#999" stroke-width="1" stroke-dasharray="5,5"/>
-      `;
+    switch (shapeType) {
+      case "circle":
+        // Kreis - symmetrisch in alle Richtungen
+        shape = `<circle cx="${cx}" cy="${cy}" r="50" fill="#4ecdc4" stroke="#333" stroke-width="2"/>`;
+        axisType = "both";
+        break;
+      case "square":
+        // Quadrat - symmetrisch in alle Richtungen
+        shape = `<rect x="${cx - 45}" y="${cy - 45}" width="90" height="90" fill="#ff6b6b" stroke="#333" stroke-width="2"/>`;
+        axisType = "both";
+        break;
+      case "rectangle":
+        // Rechteck - vertikal und horizontal symmetrisch
+        shape = `<rect x="${cx - 60}" y="${cy - 35}" width="120" height="70" fill="#96ceb4" stroke="#333" stroke-width="2"/>`;
+        axisType = "both";
+        break;
+      case "diamond":
+        // Raute - symmetrisch
+        shape = `<polygon points="${cx},${cy - 55} ${cx + 40},${cy} ${cx},${cy + 55} ${cx - 40},${cy}" fill="#ffeaa7" stroke="#333" stroke-width="2"/>`;
+        axisType = "both";
+        break;
+      case "heart":
+        // Herz - nur vertikal symmetrisch
+        shape = `<path d="M ${cx} ${cy + 40} C ${cx - 50} ${cy - 10}, ${cx - 50} ${cy - 50}, ${cx} ${cy - 20} C ${cx + 50} ${cy - 50}, ${cx + 50} ${cy - 10}, ${cx} ${cy + 40} Z" fill="#fd79a8" stroke="#333" stroke-width="2"/>`;
+        axisType = "vertical";
+        break;
+      case "arrow":
+        // Pfeil nach oben - nur vertikal symmetrisch
+        shape = `<polygon points="${cx},${cy - 50} ${cx + 30},${cy} ${cx + 15},${cy} ${cx + 15},${cy + 50} ${cx - 15},${cy + 50} ${cx - 15},${cy} ${cx - 30},${cy}" fill="#45b7d1" stroke="#333" stroke-width="2"/>`;
+        axisType = "vertical";
+        break;
     }
 
+    // Symmetrieachse einzeichnen
+    const axisLine =
+      axisType === "horizontal"
+        ? `<line x1="20" y1="${cy}" x2="180" y2="${cy}" stroke="#999" stroke-width="1" stroke-dasharray="5,5"/>`
+        : `<line x1="${cx}" y1="10" x2="${cx}" y2="140" stroke="#999" stroke-width="1" stroke-dasharray="5,5"/>`;
+
     return {
-      svg: `<svg viewBox="0 0 ${width} ${height}" class="w-full h-36 bg-white rounded-lg border">${shape}</svg>`,
-      axisType: type,
+      svg: `<svg viewBox="0 0 ${width} ${height}" class="w-full h-36 bg-white rounded-lg border">${shape}${axisLine}</svg>`,
+      axisType,
     };
   } else {
-    // Asymmetrische Form
-    const shape = `
-      <ellipse cx="60" cy="60" rx="35" ry="25" fill="#ffeaa7" stroke="#333" stroke-width="2"/>
-      <rect x="110" y="80" width="40" height="50" fill="#96ceb4" stroke="#333" stroke-width="2"/>
-      <polygon points="150,40 180,90 120,90" fill="#ff6b6b" stroke="#333" stroke-width="2"/>
-    `;
+    // Asymmetrische Einzelformen
+    const shapeType = randomChoice([
+      "blob",
+      "irregular",
+      "leaning",
+      "cutout",
+    ] as const);
+    let shape: string;
+
+    switch (shapeType) {
+      case "blob":
+        // Unregelmäßiger Blob
+        shape = `<path d="M 60 40 Q 120 30, 150 60 Q 170 100, 130 120 Q 80 140, 50 100 Q 30 70, 60 40" fill="#ffeaa7" stroke="#333" stroke-width="2"/>`;
+        break;
+      case "irregular":
+        // Unregelmäßiges Vieleck
+        shape = `<polygon points="50,30 140,50 160,90 120,130 60,110 40,70" fill="#96ceb4" stroke="#333" stroke-width="2"/>`;
+        break;
+      case "leaning":
+        // Schräges Parallelogramm
+        shape = `<polygon points="70,40 160,40 130,110 40,110" fill="#ff6b6b" stroke="#333" stroke-width="2"/>`;
+        break;
+      case "cutout":
+        // Form mit asymmetrischem Ausschnitt
+        shape = `
+          <rect x="40" y="35" width="120" height="80" fill="#4ecdc4" stroke="#333" stroke-width="2"/>
+          <circle cx="130" cy="55" r="20" fill="white" stroke="#333" stroke-width="2"/>
+        `;
+        break;
+    }
 
     return {
       svg: `<svg viewBox="0 0 ${width} ${height}" class="w-full h-36 bg-white rounded-lg border">${shape}</svg>`,
@@ -315,32 +371,14 @@ class CountingTask extends BaseTask<CountingData> {
 }
 
 /**
- * Symmetrie-Aufgabe
+ * Symmetrie-Aufgabe (Multiple-Choice: Ja/Nein)
  */
 class SymmetryTask extends BaseTask<SymmetryData> {
   validate(userAnswer: string): ValidationResult {
     const t = texts[this.locale] || texts.de;
-    const normalized = userAnswer.toLowerCase().trim();
 
-    const yesAnswers = ["ja", "yes", "так", "j", "y", "1", "true"];
-    const noAnswers = ["nein", "no", "ні", "n", "0", "false"];
-
-    let userSaidYes: boolean | null = null;
-    if (yesAnswers.includes(normalized)) {
-      userSaidYes = true;
-    } else if (noAnswers.includes(normalized)) {
-      userSaidYes = false;
-    }
-
-    if (userSaidYes === null) {
-      return {
-        isCorrect: false,
-        correctAnswer: this.data.isSymmetric ? t.yes : t.no,
-        userAnswer: normalized,
-        hint: this.getHint(),
-      };
-    }
-
+    // Multiple-Choice: userAnswer ist die Choice-ID (yes-xxx oder no-xxx)
+    const userSaidYes = userAnswer.startsWith("yes-");
     const isCorrect = userSaidYes === this.data.isSymmetric;
 
     return {
@@ -565,13 +603,22 @@ export const symmetryRecognize: TaskDefinition<SymmetryData> = {
     const isSymmetric = Math.random() > 0.4; // 60% symmetrisch
     const { svg, axisType } = generateSymmetrySvg(isSymmetric);
 
+    const yesId = "yes-" + Math.random().toString(36).substring(2, 8);
+    const noId = "no-" + Math.random().toString(36).substring(2, 8);
+    const correctId = isSymmetric ? yesId : noId;
+
     return new SymmetryTask({
       typeId: this.typeId,
       category: this.category,
       grade: this.grade,
       locale,
-      question: `${svg}\n${t.isSymmetric}\n\n${t.answerInstruction}`,
+      question: `${svg}\n${t.isSymmetric}`,
       data: { isSymmetric, answer: isSymmetric ? t.yes : t.no, axisType },
+      inputType: "multiple-choice",
+      choices: [
+        { id: yesId, label: t.yes, value: t.yes },
+        { id: noId, label: t.no, value: t.no },
+      ],
     });
   },
 };
