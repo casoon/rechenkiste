@@ -2,7 +2,7 @@
 
 A math practice application for elementary school children, built with the AHA-Stack and demonstrating the `@casoon/fragment-renderer` library.
 
-**Live Demo:** [rechenkiste.casoon.workers.dev](https://rechenkiste.casoon.workers.dev)
+**Live Demo:** [rechenkiste.casoon.dev](https://rechenkiste.casoon.dev)
 
 ## Features
 
