@@ -1,38 +1,52 @@
 import type { APIRoute } from "astro";
-import { submitAnswer, nextTask, isTestComplete } from "@domain/session";
+import {
+  loadSession,
+  saveSession,
+  submitAnswer,
+  nextTask,
+  isTestComplete,
+} from "@domain/session";
 import type { Locale } from "@i18n/translations";
 import { getLocalizedPath } from "@i18n/translations";
 import { renderFeedbackResponse } from "@services/task-renderer";
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async (context) => {
+  const { request } = context;
   const formData = await request.formData();
 
-  const sessionId = formData.get("sessionId") as string;
   const answer = formData.get("answer") as string;
   const locale = (formData.get("locale") as Locale) || "de";
 
-  if (!sessionId || !answer) {
+  if (!answer) {
     return new Response("Bad Request", { status: 400 });
   }
 
-  // Submit and validate the answer using new task system
-  const submitResult = submitAnswer(sessionId, answer);
+  // Lade Session aus Astro Session
+  const session = await loadSession(context as any);
 
-  if (!submitResult) {
+  if (!session) {
     return new Response("Session not found", { status: 404 });
   }
 
-  const { result, session } = submitResult;
+  // Submit and validate the answer
+  const result = submitAnswer(session, answer);
+
+  if (!result) {
+    return new Response("No current task", { status: 400 });
+  }
 
   // Move to next task
-  nextTask(sessionId);
+  nextTask(session);
+
+  // Speichere aktualisierte Session
+  await saveSession(context as any, session);
 
   // Check if test is complete
   const complete = isTestComplete(session);
   const nextUrl = complete
-    ? getLocalizedPath(`/ergebnis?session=${sessionId}`, locale)
-    : getLocalizedPath(`/test?session=${sessionId}`, locale);
+    ? getLocalizedPath("/ergebnis", locale)
+    : getLocalizedPath("/test", locale);
 
-  // Render feedback fragment using @casoon/fragment-renderer
+  // Render feedback fragment
   return renderFeedbackResponse(result, nextUrl, complete, locale);
 };

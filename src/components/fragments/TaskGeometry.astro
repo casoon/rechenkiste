@@ -34,17 +34,28 @@ const { task, locale, sessionId } = Astro.props;
 
     <div>
         <label for="answer" class="sr-only">{t(locale, "yourAnswer")}</label>
-        <input
-            type="text"
-            id="answer"
-            name="answer"
-            class="input-field"
-            placeholder={t(locale, "yourAnswer")}
-            autocomplete="off"
-            inputmode="numeric"
-            required
-            autofocus
-        />
+        <div class="flex items-center gap-3">
+            <input
+                type="text"
+                id="answer"
+                name="answer"
+                class="input-field flex-1"
+                placeholder={t(locale, "yourAnswer")}
+                autocomplete="off"
+                inputmode="decimal"
+                required
+                autofocus
+                x-data=""
+                x-on:input="$el.value = $el.value.replace(/[^0-9,.\-]/g, '')"
+            />
+            {
+                task.inputLabel && (
+                    <span class="text-2xl font-semibold text-gray-700">
+                        {task.inputLabel}
+                    </span>
+                )
+            }
+        </div>
     </div>
 
     <button type="submit" class="btn-success w-full">

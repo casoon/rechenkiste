@@ -14,6 +14,17 @@ const { task, locale, sessionId } = Astro.props;
 // Prüfe ob die Frage SVG enthält
 const hasSvg = task.question.includes("<svg");
 
+// Prüfe ob Bruch-Eingabe nötig ist (Antwort enthält /)
+const needsFractionInput =
+    task.question.includes("/") || // Brüche wie 1/5
+    task.typeId?.includes("fraction") ||
+    task.typeId === "percent-identify"; // "Was ist X% als Bruch?"
+
+// Erlaubte Zeichen für die Eingabe als Regex-Pattern
+// Brüche: nur 0-9 und /
+// Zahlen: 0-9, Komma, Punkt, Minus
+const allowedCharsRegex = needsFractionInput ? /[^0-9/]/g : /[^0-9,.\-]/g;
+
 // Trenne SVG vom Text wenn vorhanden
 let svgPart = "";
 let textPart = task.question;
@@ -49,7 +60,7 @@ if (hasSvg) {
                     {textPart}
                 </p>
             ) : (
-                <span class="text-4xl md:text-5xl font-bold">
+                <span class="text-4xl md:text-5xl font-bold whitespace-pre-line">
                     {task.question}
                 </span>
             )
@@ -69,18 +80,31 @@ if (hasSvg) {
     <input type="hidden" name="taskId" value={task.id} />
 
     <div>
-        <label for="answer" class="sr-only">{t(locale, "yourAnswer")}</label>
-        <input
-            type="text"
-            id="answer"
-            name="answer"
-            class="input-field"
-            placeholder={t(locale, "yourAnswer")}
-            autocomplete="off"
-            inputmode="numeric"
-            required
-            autofocus
-        />
+        <label for="answer" class="sr-only">
+            {t(locale, "yourAnswer")}
+        </label>
+        <div class="flex items-center gap-3">
+            <input
+                type="text"
+                id="answer"
+                name="answer"
+                class="input-field flex-1"
+                placeholder={t(locale, "yourAnswer")}
+                autocomplete="off"
+                inputmode={needsFractionInput ? "text" : "decimal"}
+                required
+                autofocus
+                x-data={`{ pattern: ${JSON.stringify(allowedCharsRegex.source)} }`}
+                x-on:input="$el.value = $el.value.replace(new RegExp(pattern, 'g'), '')"
+            />
+            {
+                task.inputLabel && (
+                    <span class="text-2xl font-semibold text-gray-700">
+                        {task.inputLabel}
+                    </span>
+                )
+            }
+        </div>
     </div>
 
     <button type="submit" class="btn-success w-full">

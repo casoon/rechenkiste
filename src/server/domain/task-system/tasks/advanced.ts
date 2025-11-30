@@ -238,13 +238,13 @@ function generateCuboidSvg(
   width: number,
   height: number,
 ): string {
-  const svgWidth = 200;
-  const svgHeight = 160;
+  const svgWidth = 280;
+  const svgHeight = 220;
 
   // Isometrische Projektion
-  const scale = 12;
-  const startX = 50;
-  const startY = 120;
+  const scale = 18;
+  const startX = 60;
+  const startY = 170;
 
   // Punkte berechnen
   const l = length * scale;
@@ -271,7 +271,7 @@ function generateCuboidSvg(
   };
 
   return `
-    <svg viewBox="0 0 ${svgWidth} ${svgHeight}" class="w-48 h-40 mx-auto">
+    <svg viewBox="0 0 ${svgWidth} ${svgHeight}" class="w-64 h-56 mx-auto">
       <!-- Hintere Kanten (gestrichelt) -->
       <line x1="${points.p5[0]}" y1="${points.p5[1]}" x2="${points.p1[0]}" y2="${points.p1[1]}" stroke="#999" stroke-width="1" stroke-dasharray="3,3"/>
       <line x1="${points.p5[0]}" y1="${points.p5[1]}" x2="${points.p8[0]}" y2="${points.p8[1]}" stroke="#999" stroke-width="1" stroke-dasharray="3,3"/>
@@ -290,9 +290,9 @@ function generateCuboidSvg(
                fill="#96ceb4" fill-opacity="0.4" stroke="#333" stroke-width="2"/>
 
       <!-- Beschriftungen -->
-      <text x="${(points.p1[0] + points.p2[0]) / 2}" y="${points.p1[1] + 15}" text-anchor="middle" font-size="11">${length} cm</text>
-      <text x="${points.p2[0] + 20}" y="${(points.p2[1] + points.p6[1]) / 2}" font-size="11">${width} cm</text>
-      <text x="${points.p3[0] + 12}" y="${(points.p2[1] + points.p3[1]) / 2}" font-size="11">${height} cm</text>
+      <text x="${(points.p1[0] + points.p2[0]) / 2}" y="${points.p1[1] + 18}" text-anchor="middle" font-size="14" font-weight="bold">${length} cm</text>
+      <text x="${points.p2[0] + 25}" y="${(points.p2[1] + points.p6[1]) / 2}" font-size="14" font-weight="bold">${width} cm</text>
+      <text x="${points.p3[0] + 15}" y="${(points.p2[1] + points.p3[1]) / 2}" font-size="14" font-weight="bold">${height} cm</text>
     </svg>
   `;
 }
@@ -653,7 +653,7 @@ export const negativeAddition: TaskDefinition<NegativeNumberData> = {
       category: this.category,
       grade: this.grade,
       locale,
-      question: `${t.calculate} ${a} + ${bStr} = ?`,
+      question: `${t.calculate}\n${a} + ${bStr} = ?`,
       data: { a, b, operator: "+", answer },
     });
   },
@@ -687,7 +687,7 @@ export const negativeSubtraction: TaskDefinition<NegativeNumberData> = {
       category: this.category,
       grade: this.grade,
       locale,
-      question: `${t.calculate} ${a} - ${bStr} = ?`,
+      question: `${t.calculate}\n${a} - ${bStr} = ?`,
       data: { a, b, operator: "-", answer },
     });
   },
@@ -718,7 +718,8 @@ export const triangleArea: TaskDefinition<TriangleData> = {
       category: this.category,
       grade: this.grade,
       locale,
-      question: `${svg}\n${t.triangleArea}\n${t.triangleFormula}\nAntwort in ${t.cm2}`,
+      question: `${svg}\n${t.triangleArea}\n${t.triangleFormula}`,
+      inputLabel: t.cm2,
       data: { base, height, answer },
     });
   },
@@ -749,7 +750,8 @@ export const cuboidVolume: TaskDefinition<VolumeData> = {
       category: this.category,
       grade: this.grade,
       locale,
-      question: `${svg}\n${t.volume}\n${t.volumeFormula}\nAntwort in ${t.cm3}`,
+      question: `${svg}\n${t.volume}\n${t.volumeFormula}`,
+      inputLabel: t.cm3,
       data: { length, width, height, answer },
     });
   },

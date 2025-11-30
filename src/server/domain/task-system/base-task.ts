@@ -70,10 +70,27 @@ export abstract class BaseTask<TData = unknown> implements TaskInstance<TData> {
 
   /**
    * Hilfsmethode: Parst eine numerische Antwort
+   * Entfernt Einheiten wie cm³, cm², kg, m, l, etc.
+   * Lehnt ungültige Zeichen (Buchstaben etc.) ab
    */
   protected parseNumericAnswer(userAnswer: string): number | null {
-    // Komma durch Punkt ersetzen für Dezimalzahlen
-    const normalized = userAnswer.replace(",", ".").trim();
+    // Einheiten entfernen (cm³, cm², m², ha, kg, g, l, ml, etc.)
+    let normalized = userAnswer
+      .replace(/\s+/g, "") // Leerzeichen entfernen
+      .replace(/cm³|cm3|cm²|cm2|m³|m3|m²|m2|km²|km2/gi, "")
+      .replace(/ha|mm|cm|dm|km|m/gi, "")
+      .replace(/mg|kg|g|t/gi, "")
+      .replace(/ml|l/gi, "")
+      .replace(/€|euro|cent/gi, "")
+      .replace(/stück|stuck|dutzend/gi, "")
+      .replace(",", ".") // Komma durch Punkt für Dezimalzahlen
+      .trim();
+
+    // Prüfe ob nur gültige Zeichen übrig sind (Ziffern, Punkt, Minus)
+    if (!/^-?\d*\.?\d+$/.test(normalized)) {
+      return null;
+    }
+
     const num = parseFloat(normalized);
     return isNaN(num) ? null : num;
   }

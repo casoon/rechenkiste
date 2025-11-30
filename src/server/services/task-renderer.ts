@@ -165,27 +165,19 @@ export async function renderFeedbackResponse(
   isComplete: boolean,
   locale: Locale,
 ): Promise<Response> {
-  const runtime = createRuntime(locale);
-  const htmx = await runtime.getService<{
-    getResponseHeaders(
-      options?: Record<string, unknown>,
-    ): Record<string, string>;
-  }>("htmx");
+  const html = await renderFeedbackFragment(
+    result,
+    nextUrl,
+    isComplete,
+    locale,
+  );
 
-  const Component = result.isCorrect ? FeedbackCorrect : FeedbackIncorrect;
-  const props = result.isCorrect
-    ? { locale, nextUrl, isComplete }
-    : {
-        locale,
-        correctAnswer: result.correctAnswer,
-        hint: result.hint,
-        explanation: result.explanation,
-        nextUrl,
-        isComplete,
-      };
-
-  return runtime.renderToResponse(Component, props, {
-    headers: htmx.getResponseHeaders({ trigger: "feedbackShown" }),
+  return new Response(html, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "HX-Trigger": "feedbackShown",
+    },
   });
 }
 
@@ -245,24 +237,15 @@ export async function renderResultResponse(
   },
   locale: Locale,
 ): Promise<Response> {
-  const runtime = createRuntime(locale);
-  const htmx = await runtime.getService<{
-    getResponseHeaders(
-      options?: Record<string, unknown>,
-    ): Record<string, string>;
-  }>("htmx");
+  const html = await renderResultFragment(session, resultData, locale);
 
-  return runtime.renderToResponse(
-    ResultDisplay,
-    {
-      locale,
-      session,
-      resultData,
+  return new Response(html, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "HX-Trigger": "resultShown",
     },
-    {
-      headers: htmx.getResponseHeaders({ trigger: "resultShown" }),
-    },
-  );
+  });
 }
 
 // Legacy-Export für Abwärtskompatibilität

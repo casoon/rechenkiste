@@ -18,52 +18,58 @@ const texts = {
   de: {
     countShapes: (shape: string) => `Zähle die ${shape}. Wie viele sind es?`,
     perimeter: (a: number, b: number) =>
-      `Ein Rechteck hat die Seiten ${a} cm und ${b} cm. Wie groß ist der Umfang in cm?`,
+      `Ein Rechteck hat die Seiten ${a} cm und ${b} cm. Wie groß ist der Umfang?`,
     area: (a: number, b: number) =>
-      `Ein Rechteck hat die Seiten ${a} cm und ${b} cm. Wie groß ist die Fläche in cm²?`,
+      `Ein Rechteck hat die Seiten ${a} cm und ${b} cm. Wie groß ist die Fläche?`,
     squarePerimeter: (a: number) =>
-      `Ein Quadrat hat die Seitenlänge ${a} cm. Wie groß ist der Umfang in cm?`,
+      `Ein Quadrat hat die Seitenlänge ${a} cm. Wie groß ist der Umfang?`,
     squareArea: (a: number) =>
-      `Ein Quadrat hat die Seitenlänge ${a} cm. Wie groß ist die Fläche in cm²?`,
+      `Ein Quadrat hat die Seitenlänge ${a} cm. Wie groß ist die Fläche?`,
     shapes: {
       circle: "Kreise",
       square: "Quadrate",
       triangle: "Dreiecke",
       rectangle: "Rechtecke",
     },
+    cm: "cm",
+    cm2: "cm²",
   },
   en: {
     countShapes: (shape: string) => `Count the ${shape}. How many are there?`,
     perimeter: (a: number, b: number) =>
-      `A rectangle has sides of ${a} cm and ${b} cm. What is the perimeter in cm?`,
+      `A rectangle has sides of ${a} cm and ${b} cm. What is the perimeter?`,
     area: (a: number, b: number) =>
-      `A rectangle has sides of ${a} cm and ${b} cm. What is the area in cm²?`,
+      `A rectangle has sides of ${a} cm and ${b} cm. What is the area?`,
     squarePerimeter: (a: number) =>
-      `A square has a side length of ${a} cm. What is the perimeter in cm?`,
+      `A square has a side length of ${a} cm. What is the perimeter?`,
     squareArea: (a: number) =>
-      `A square has a side length of ${a} cm. What is the area in cm²?`,
+      `A square has a side length of ${a} cm. What is the area?`,
     shapes: {
       circle: "circles",
       square: "squares",
       triangle: "triangles",
       rectangle: "rectangles",
     },
+    cm: "cm",
+    cm2: "cm²",
   },
   uk: {
     countShapes: (shape: string) => `Порахуй ${shape}. Скільки їх?`,
     perimeter: (a: number, b: number) =>
-      `Прямокутник має сторони ${a} см і ${b} см. Який периметр в см?`,
+      `Прямокутник має сторони ${a} см і ${b} см. Який периметр?`,
     area: (a: number, b: number) =>
-      `Прямокутник має сторони ${a} см і ${b} см. Яка площа в см²?`,
+      `Прямокутник має сторони ${a} см і ${b} см. Яка площа?`,
     squarePerimeter: (a: number) =>
-      `Квадрат має сторону ${a} см. Який периметр в см?`,
-    squareArea: (a: number) => `Квадрат має сторону ${a} см. Яка площа в см²?`,
+      `Квадрат має сторону ${a} см. Який периметр?`,
+    squareArea: (a: number) => `Квадрат має сторону ${a} см. Яка площа?`,
     shapes: {
       circle: "кола",
       square: "квадрати",
       triangle: "трикутники",
       rectangle: "прямокутники",
     },
+    cm: "см",
+    cm2: "см²",
   },
 };
 
@@ -150,13 +156,13 @@ function generateRectangleSvg(width: number, height: number): string {
   const w = width * scale;
   const h = height * scale;
   const x = (200 - w) / 2;
-  const y = (120 - h) / 2;
+  const y = (160 - h) / 2;
 
   return `
-    <svg viewBox="0 0 200 140" class="w-full h-32">
+    <svg viewBox="0 0 200 160" class="w-64 h-44 mx-auto">
       <rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#4ecdc4" fill-opacity="0.3" stroke="#4ecdc4" stroke-width="3"/>
-      <text x="${x + w / 2}" y="${y - 8}" text-anchor="middle" fill="#333" font-size="14" font-weight="bold">${width} cm</text>
-      <text x="${x + w + 8}" y="${y + h / 2}" text-anchor="start" fill="#333" font-size="14" font-weight="bold">${height} cm</text>
+      <text x="${x + w / 2}" y="${y - 10}" text-anchor="middle" fill="#333" font-size="14" font-weight="bold">${width} cm</text>
+      <text x="${x + w + 10}" y="${y + h / 2 + 5}" text-anchor="start" fill="#333" font-size="14" font-weight="bold">${height} cm</text>
     </svg>
   `;
 }
@@ -166,12 +172,12 @@ function generateSquareSvg(side: number): string {
   const scale = Math.min(100 / side, 15);
   const s = side * scale;
   const x = (200 - s) / 2;
-  const y = (120 - s) / 2;
+  const y = (160 - s) / 2;
 
   return `
-    <svg viewBox="0 0 200 140" class="w-full h-32">
+    <svg viewBox="0 0 200 160" class="w-64 h-44 mx-auto">
       <rect x="${x}" y="${y}" width="${s}" height="${s}" fill="#ff6b6b" fill-opacity="0.3" stroke="#ff6b6b" stroke-width="3"/>
-      <text x="${x + s / 2}" y="${y - 8}" text-anchor="middle" fill="#333" font-size="14" font-weight="bold">${side} cm</text>
+      <text x="${x + s / 2}" y="${y - 10}" text-anchor="middle" fill="#333" font-size="14" font-weight="bold">${side} cm</text>
     </svg>
   `;
 }
@@ -229,7 +235,7 @@ class GeometryTask extends BaseTask<GeometryData> {
 export const countShapes: TaskDefinition<GeometryData> = {
   typeId: "geometry-count",
   category: "geometry",
-  grade: 5,
+  grade: 1,
   description: "Formen zählen",
 
   generate(locale: Locale): TaskInstance<GeometryData> {
@@ -277,7 +283,8 @@ export const rectanglePerimeter: TaskDefinition<GeometryData> = {
       category: this.category,
       grade: this.grade,
       locale,
-      question: prompt,
+      question: `${svgMarkup}\n${prompt}`,
+      inputLabel: t.cm,
       data: {
         svgMarkup,
         prompt,
@@ -308,7 +315,8 @@ export const rectangleArea: TaskDefinition<GeometryData> = {
       category: this.category,
       grade: this.grade,
       locale,
-      question: prompt,
+      question: `${svgMarkup}\n${prompt}`,
+      inputLabel: t.cm2,
       data: {
         svgMarkup,
         prompt,
@@ -338,7 +346,8 @@ export const squarePerimeter: TaskDefinition<GeometryData> = {
       category: this.category,
       grade: this.grade,
       locale,
-      question: prompt,
+      question: `${svgMarkup}\n${prompt}`,
+      inputLabel: t.cm,
       data: {
         svgMarkup,
         prompt,
@@ -368,7 +377,8 @@ export const squareArea: TaskDefinition<GeometryData> = {
       category: this.category,
       grade: this.grade,
       locale,
-      question: prompt,
+      question: `${svgMarkup}\n${prompt}`,
+      inputLabel: t.cm2,
       data: {
         svgMarkup,
         prompt,

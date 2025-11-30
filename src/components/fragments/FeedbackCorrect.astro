@@ -55,18 +55,19 @@ const { locale, nextUrl, isComplete } = Astro.props;
     }
 </style>
 
-<script>
-    const feedback = document.querySelector(
-        ".feedback-correct[data-next-url]",
-    ) as HTMLElement;
-    if (feedback) {
-        const nextUrl = feedback.dataset.nextUrl;
-        const delay = parseInt(feedback.dataset.delay || "1500", 10);
-
-        setTimeout(() => {
-            if (nextUrl) {
-                window.location.href = nextUrl;
-            }
-        }, delay);
-    }
+<script is:inline>
+    (function () {
+        const feedback = document.querySelector(
+            ".feedback-correct[data-next-url]",
+        );
+        if (feedback) {
+            const nextUrl = feedback.dataset.nextUrl;
+            const delay = parseInt(feedback.dataset.delay || "1500", 10);
+            setTimeout(function () {
+                if (nextUrl) {
+                    window.location.href = nextUrl;
+                }
+            }, delay);
+        }
+    })();
 </script>

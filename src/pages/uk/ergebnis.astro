@@ -1,6 +1,23 @@
 ---
-import ErgebnisPage from "../ergebnis.astro";
-export const prerender = false;
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { t } from "@i18n/translations";
+import type { Locale } from "@i18n/translations";
+import { loadSession, getResults } from "@domain/session";
+import { renderResultFragment } from "@services/task-renderer";
+
+const locale: Locale = "uk";
+
+const session = await loadSession(Astro);
+if (!session) {
+    return Astro.redirect("/uk");
+}
+
+const resultData = getResults(session);
+const resultHtml = await renderResultFragment(session, resultData, locale);
 ---
 
-<ErgebnisPage />
+<BaseLayout title={t(locale, "result")} locale={locale}>
+    <div id="result-container" transition:name="main-card">
+        <Fragment set:html={resultHtml} />
+    </div>
+</BaseLayout>

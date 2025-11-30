@@ -29,11 +29,7 @@ const currentPath = Astro.url.pathname.replace(/^\/(en|uk)/, "") || "/";
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <title>{title} - {t(locale, "appName")}</title>
         <ViewTransitions />
-        <script is:inline src="https://unpkg.com/htmx.org@2.0.0"></script>
-        <script
-            is:inline
-            src="https://unpkg.com/htmx-ext-view-transitions@2.0.0/view-transitions.js"
-        ></script>
+        <script is:inline src="https://unpkg.com/htmx.org@2.0.4"></script>
         <script
             is:inline
             defer
@@ -47,7 +43,7 @@ const currentPath = Astro.url.pathname.replace(/^\/(en|uk)/, "") || "/";
             });
         </script>
     </head>
-    <body class="min-h-screen" hx-ext="view-transitions">
+    <body class="min-h-screen">
         <div class="min-h-screen flex flex-col">
             <!-- Header -->
             <header class="p-4">

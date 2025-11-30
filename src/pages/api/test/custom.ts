@@ -1,16 +1,16 @@
 import type { APIRoute } from "astro";
-import { createCustomSession } from "@domain/session";
+import { createCustomSession, saveSession } from "@domain/session";
 import type { Locale } from "@i18n/translations";
 import { getLocalizedPath } from "@i18n/translations";
 
-export const POST: APIRoute = async ({ request, redirect }) => {
+export const POST: APIRoute = async (context) => {
+  const { request, redirect } = context;
   const formData = await request.formData();
 
   const locale = (formData.get("locale") as Locale) || "de";
   const count = parseInt(formData.get("count") as string, 10) || 10;
   const selectedTypesJson = formData.get("selectedTypes") as string;
 
-  // Parse selected task types
   let selectedTypes: string[] = [];
   try {
     selectedTypes = JSON.parse(selectedTypesJson);
@@ -18,7 +18,6 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     return redirect(getLocalizedPath("/auswahl", locale));
   }
 
-  // Validate
   if (!Array.isArray(selectedTypes) || selectedTypes.length === 0) {
     return redirect(getLocalizedPath("/auswahl", locale));
   }
@@ -27,11 +26,9 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     return redirect(getLocalizedPath("/auswahl", locale));
   }
 
-  // Options
   const adaptiveDifficulty = formData.get("adaptive") === "on";
   const retryIncorrect = formData.get("retry") === "on";
 
-  // Create custom session
   const session = createCustomSession(selectedTypes, count, locale, {
     adaptiveDifficulty,
     retryIncorrect,
@@ -42,6 +39,8 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     return redirect(getLocalizedPath("/auswahl", locale));
   }
 
-  // Redirect to test page
-  return redirect(getLocalizedPath(`/test?session=${session.id}`, locale));
+  // Speichere Session in Astro Session (KV)
+  await saveSession(context as any, session);
+
+  return redirect(getLocalizedPath("/test", locale));
 };

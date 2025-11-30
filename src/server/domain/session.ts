@@ -2,6 +2,7 @@
  * Session Management
  *
  * Verwaltet Test-Sessions mit dem neuen Task-System
+ * Nutzt Astro Sessions für Cloudflare Workers Kompatibilität
  */
 
 import type { Locale } from "@i18n/translations";
@@ -9,10 +10,16 @@ import {
   type Grade,
   type TaskInstance,
   type ValidationResult,
+  type TaskCategory,
+  type InputType,
+  type ChoiceOption,
+  type DragDropItem,
+  type DragDropTarget,
   initTaskSystem,
   taskGenerator,
   taskRegistry,
 } from "@domain/task-system";
+import type { AstroGlobal } from "astro";
 
 // Initialisiere Task-System
 initTaskSystem();
@@ -24,42 +31,138 @@ export interface TaskResultRecord {
   isCorrect: boolean;
   correctAnswer: string | number;
   hint?: string;
-  // Für Wiederholung
   attempts: number;
   isRetry: boolean;
 }
 
 // Session-Optionen
 export interface SessionOptions {
-  adaptiveDifficulty?: boolean; // Schwierigkeit anpassen
-  retryIncorrect?: boolean; // Falsche Aufgaben wiederholen
-  retryAtEnd?: boolean; // Wiederholung am Ende statt sofort
+  adaptiveDifficulty?: boolean;
+  retryIncorrect?: boolean;
+  retryAtEnd?: boolean;
 }
 
-// Test-Session
+// Serialisierbare Task-Daten (für Session-Speicherung)
+export interface SerializedTask {
+  id: string;
+  typeId: string;
+  question: string;
+  correctAnswer: string | number;
+  hint: string;
+  category: TaskCategory;
+  grade: Grade;
+  locale: Locale;
+  data?: unknown;
+  // Input-Typ und zugehörige Daten
+  inputType?: InputType;
+  inputLabel?: string;
+  choices?: ChoiceOption[];
+  dragItems?: DragDropItem[];
+  dropTargets?: DragDropTarget[];
+}
+
+// Test-Session (serialisierbar für KV)
 export interface TestSession {
   id: string;
   grade: Grade;
   totalTasks: number;
   currentIndex: number;
-  tasks: TaskInstance[];
+  tasks: SerializedTask[];
   results: TaskResultRecord[];
   locale: Locale;
-  // Neue Features
   options: SessionOptions;
-  currentDifficulty: Grade; // Aktuelle angepasste Schwierigkeit
-  consecutiveCorrect: number; // Aufeinanderfolgende richtige Antworten
-  consecutiveIncorrect: number; // Aufeinanderfolgende falsche Antworten
-  incorrectTaskIds: string[]; // IDs falscher Aufgaben für Wiederholung
-  retryMode: boolean; // Sind wir im Wiederholungsmodus?
+  currentDifficulty: Grade;
+  consecutiveCorrect: number;
+  consecutiveIncorrect: number;
+  incorrectTaskIds: string[];
+  retryMode: boolean;
 }
-
-// In-Memory Store für Sessions
-const sessions = new Map<string, TestSession>();
 
 // ID-Generator
 function generateSessionId(): string {
   return `session-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 8)}`;
+}
+
+// Serialisiert eine TaskInstance für die Speicherung
+function serializeTask(task: TaskInstance): SerializedTask {
+  return {
+    id: task.id,
+    typeId: task.typeId,
+    question: task.question,
+    correctAnswer: task.getCorrectAnswer(),
+    hint: task.getHint(),
+    category: task.category,
+    grade: task.grade,
+    locale: task.locale,
+    data: task.data,
+    inputType: task.inputType,
+    inputLabel: task.inputLabel,
+    choices: task.choices,
+    dragItems: task.dragItems,
+    dropTargets: task.dropTargets,
+  };
+}
+
+// Erstellt eine TaskInstance aus serialisierten Daten
+function deserializeTask(data: SerializedTask): TaskInstance {
+  return {
+    id: data.id,
+    typeId: data.typeId,
+    question: data.question,
+    category: data.category,
+    grade: data.grade,
+    locale: data.locale,
+    data: data.data,
+    inputType: data.inputType,
+    inputLabel: data.inputLabel,
+    choices: data.choices,
+    dragItems: data.dragItems,
+    dropTargets: data.dropTargets,
+    validate: (answer: string): ValidationResult => {
+      const correctAnswer = data.correctAnswer;
+
+      // Für Drag-Drop: JSON-Vergleich
+      if (data.inputType === "drag-drop" && data.dragItems) {
+        try {
+          const userAssignments = JSON.parse(answer);
+          // Prüfe ob alle Items korrekt zugeordnet sind
+          let allCorrect = true;
+          for (const item of data.dragItems) {
+            if (userAssignments[item.id] !== item.correctTarget) {
+              allCorrect = false;
+              break;
+            }
+          }
+          return {
+            isCorrect: allCorrect,
+            correctAnswer,
+            userAnswer: answer,
+            hint: allCorrect ? undefined : data.hint,
+          };
+        } catch {
+          return {
+            isCorrect: false,
+            correctAnswer,
+            userAnswer: answer,
+            hint: data.hint,
+          };
+        }
+      }
+
+      // Standard-Vergleich
+      const normalizedAnswer = answer.trim().toLowerCase();
+      const normalizedCorrect = String(correctAnswer).trim().toLowerCase();
+      const isCorrect = normalizedAnswer === normalizedCorrect;
+      return {
+        isCorrect,
+        correctAnswer,
+        userAnswer: answer,
+        hint: isCorrect ? undefined : data.hint,
+      };
+    },
+    getHint: () => data.hint,
+    getCorrectAnswer: () => data.correctAnswer,
+  };
 }
 
 /**
@@ -72,7 +175,8 @@ export function createSession(
   options: SessionOptions = {},
 ): TestSession {
   const id = generateSessionId();
-  const tasks = taskGenerator.generateMany(grade, taskCount, locale);
+  const taskInstances = taskGenerator.generateMany(grade, taskCount, locale);
+  const tasks = taskInstances.map(serializeTask);
 
   const session: TestSession = {
     id,
@@ -82,7 +186,6 @@ export function createSession(
     tasks,
     results: [],
     locale,
-    // Neue Features
     options: {
       adaptiveDifficulty: options.adaptiveDifficulty ?? false,
       retryIncorrect: options.retryIncorrect ?? false,
@@ -95,7 +198,6 @@ export function createSession(
     retryMode: false,
   };
 
-  sessions.set(id, session);
   return session;
 }
 
@@ -108,7 +210,6 @@ export function createCustomSession(
   locale: Locale,
   options: SessionOptions = {},
 ): TestSession | null {
-  // Validiere Task-Types
   const validDefinitions = taskTypeIds
     .map((id) => taskRegistry.get(id))
     .filter((def): def is NonNullable<typeof def> => def !== undefined);
@@ -119,17 +220,28 @@ export function createCustomSession(
 
   const id = generateSessionId();
 
-  // Generiere Aufgaben gleichgewichtet aus den ausgewählten Typen
-  const tasks: TaskInstance[] = [];
+  const taskInstances: TaskInstance[] = [];
+  const usedTypeIds = new Set<string>();
+
   for (let i = 0; i < taskCount; i++) {
-    // Wähle zufällig einen der ausgewählten Aufgabentypen (gleichgewichtet)
-    const randomIndex = Math.floor(Math.random() * validDefinitions.length);
-    const definition = validDefinitions[randomIndex];
+    // Filtere bereits verwendete Typen heraus
+    const unusedDefinitions = validDefinitions.filter(
+      (def) => !usedTypeIds.has(def.typeId),
+    );
+
+    // Falls alle Typen verwendet wurden, erlaube Wiederholungen
+    const candidates =
+      unusedDefinitions.length > 0 ? unusedDefinitions : validDefinitions;
+
+    const randomIndex = Math.floor(Math.random() * candidates.length);
+    const definition = candidates[randomIndex];
+    usedTypeIds.add(definition.typeId);
     const task = definition.generate(locale);
-    tasks.push(task);
+    taskInstances.push(task);
   }
 
-  // Bestimme die durchschnittliche/höchste Klassenstufe für adaptive Schwierigkeit
+  const tasks = taskInstances.map(serializeTask);
+
   const grades = validDefinitions.map((d) => d.grade);
   const avgGrade = Math.round(
     grades.reduce((a, b) => a + b, 0) / grades.length,
@@ -155,22 +267,54 @@ export function createCustomSession(
     retryMode: false,
   };
 
-  sessions.set(id, session);
   return session;
 }
 
 /**
- * Holt eine Session
+ * Speichert eine Session in Astro Session
  */
-export function getSession(id: string): TestSession | undefined {
-  return sessions.get(id);
+export async function saveSession(
+  astro: AstroGlobal,
+  session: TestSession,
+): Promise<void> {
+  const astroSession = await astro.session;
+  if (astroSession) {
+    await astroSession.set("testSession", session);
+  }
+}
+
+/**
+ * Lädt eine Session aus Astro Session
+ */
+export async function loadSession(
+  astro: AstroGlobal,
+): Promise<TestSession | undefined> {
+  const astroSession = await astro.session;
+  if (astroSession) {
+    return (await astroSession.get("testSession")) as TestSession | undefined;
+  }
+  return undefined;
 }
 
 /**
  * Gibt die aktuelle Aufgabe zurück
  */
 export function getCurrentTask(session: TestSession): TaskInstance | undefined {
-  return session.tasks[session.currentIndex];
+  const serialized = session.tasks[session.currentIndex];
+  if (!serialized) return undefined;
+  return deserializeTask(serialized);
+}
+
+/**
+ * Gibt eine Aufgabe nach ID zurück
+ */
+export function getTaskById(
+  session: TestSession,
+  taskId: string,
+): TaskInstance | undefined {
+  const serialized = session.tasks.find((t) => t.id === taskId);
+  if (!serialized) return undefined;
+  return deserializeTask(serialized);
 }
 
 /**
@@ -179,7 +323,6 @@ export function getCurrentTask(session: TestSession): TaskInstance | undefined {
 function adjustDifficulty(session: TestSession): void {
   if (!session.options.adaptiveDifficulty) return;
 
-  // Nach 3 richtigen Antworten: Schwierigkeit erhöhen
   if (session.consecutiveCorrect >= 3 && session.currentDifficulty < 5) {
     session.currentDifficulty = Math.min(
       5,
@@ -187,35 +330,6 @@ function adjustDifficulty(session: TestSession): void {
     ) as Grade;
     session.consecutiveCorrect = 0;
 
-    // Neue schwierigere Aufgaben für die restlichen Slots generieren
-    const remaining = session.totalTasks - session.currentIndex - 1;
-    if (remaining > 0) {
-      const newTasks = taskGenerator.generateMany(
-        session.currentDifficulty,
-        Math.min(remaining, 3), // Maximal 3 neue Aufgaben
-        session.locale,
-      );
-      // Ersetze einige der verbleibenden Aufgaben
-      for (
-        let i = 0;
-        i < newTasks.length &&
-        session.currentIndex + 1 + i < session.tasks.length;
-        i++
-      ) {
-        session.tasks[session.currentIndex + 1 + i] = newTasks[i];
-      }
-    }
-  }
-
-  // Nach 3 falschen Antworten: Schwierigkeit verringern
-  if (session.consecutiveIncorrect >= 3 && session.currentDifficulty > 1) {
-    session.currentDifficulty = Math.max(
-      1,
-      session.currentDifficulty - 1,
-    ) as Grade;
-    session.consecutiveIncorrect = 0;
-
-    // Neue einfachere Aufgaben für die restlichen Slots generieren
     const remaining = session.totalTasks - session.currentIndex - 1;
     if (remaining > 0) {
       const newTasks = taskGenerator.generateMany(
@@ -229,7 +343,36 @@ function adjustDifficulty(session: TestSession): void {
         session.currentIndex + 1 + i < session.tasks.length;
         i++
       ) {
-        session.tasks[session.currentIndex + 1 + i] = newTasks[i];
+        session.tasks[session.currentIndex + 1 + i] = serializeTask(
+          newTasks[i],
+        );
+      }
+    }
+  }
+
+  if (session.consecutiveIncorrect >= 3 && session.currentDifficulty > 1) {
+    session.currentDifficulty = Math.max(
+      1,
+      session.currentDifficulty - 1,
+    ) as Grade;
+    session.consecutiveIncorrect = 0;
+
+    const remaining = session.totalTasks - session.currentIndex - 1;
+    if (remaining > 0) {
+      const newTasks = taskGenerator.generateMany(
+        session.currentDifficulty,
+        Math.min(remaining, 3),
+        session.locale,
+      );
+      for (
+        let i = 0;
+        i < newTasks.length &&
+        session.currentIndex + 1 + i < session.tasks.length;
+        i++
+      ) {
+        session.tasks[session.currentIndex + 1 + i] = serializeTask(
+          newTasks[i],
+        );
       }
     }
   }
@@ -239,26 +382,20 @@ function adjustDifficulty(session: TestSession): void {
  * Prüft eine Antwort und speichert das Ergebnis
  */
 export function submitAnswer(
-  sessionId: string,
+  session: TestSession,
   answer: string,
-): { result: ValidationResult; session: TestSession } | undefined {
-  const session = sessions.get(sessionId);
-  if (!session) return undefined;
-
-  const currentTask = session.tasks[session.currentIndex];
+): ValidationResult | undefined {
+  const currentTask = getCurrentTask(session);
   if (!currentTask) return undefined;
 
-  // Validiere mit dem neuen Task-System
   const result = currentTask.validate(answer);
 
-  // Prüfe ob dies ein Wiederholungsversuch ist
   const existingResult = session.results.find(
     (r) => r.taskId === currentTask.id,
   );
   const attempts = existingResult ? existingResult.attempts + 1 : 1;
   const isRetry = session.retryMode || existingResult !== undefined;
 
-  // Speichere Ergebnis
   const record: TaskResultRecord = {
     taskId: currentTask.id,
     userAnswer: answer,
@@ -269,7 +406,6 @@ export function submitAnswer(
     isRetry,
   };
 
-  // Bei Wiederholung: altes Ergebnis aktualisieren
   if (existingResult) {
     const idx = session.results.indexOf(existingResult);
     session.results[idx] = record;
@@ -277,7 +413,6 @@ export function submitAnswer(
     session.results.push(record);
   }
 
-  // Adaptive Schwierigkeit: Zähler aktualisieren
   if (result.isCorrect) {
     session.consecutiveCorrect++;
     session.consecutiveIncorrect = 0;
@@ -285,7 +420,6 @@ export function submitAnswer(
     session.consecutiveIncorrect++;
     session.consecutiveCorrect = 0;
 
-    // Falsche Aufgabe für spätere Wiederholung merken
     if (
       session.options.retryIncorrect &&
       !session.incorrectTaskIds.includes(currentTask.id)
@@ -294,22 +428,17 @@ export function submitAnswer(
     }
   }
 
-  // Schwierigkeit anpassen
   adjustDifficulty(session);
 
-  return { result, session };
+  return result;
 }
 
 /**
  * Geht zur nächsten Aufgabe
  */
-export function nextTask(sessionId: string): TestSession | undefined {
-  const session = sessions.get(sessionId);
-  if (!session) return undefined;
-
+export function nextTask(session: TestSession): void {
   session.currentIndex++;
 
-  // Prüfe ob wir in den Wiederholungsmodus wechseln sollen
   if (
     session.options.retryIncorrect &&
     session.options.retryAtEnd &&
@@ -317,28 +446,23 @@ export function nextTask(sessionId: string): TestSession | undefined {
     session.incorrectTaskIds.length > 0 &&
     !session.retryMode
   ) {
-    // Wechsle in Wiederholungsmodus
     session.retryMode = true;
     session.currentIndex = 0;
 
-    // Ersetze Tasks mit den falschen Aufgaben
     const incorrectTasks = session.incorrectTaskIds
       .map((id) => session.tasks.find((t) => t.id === id))
-      .filter((t): t is TaskInstance => t !== undefined);
+      .filter((t): t is SerializedTask => t !== undefined);
 
     session.tasks = incorrectTasks;
     session.totalTasks = incorrectTasks.length;
-    session.incorrectTaskIds = []; // Reset für diese Runde
+    session.incorrectTaskIds = [];
   }
-
-  return session;
 }
 
 /**
  * Prüft ob der Test abgeschlossen ist
  */
 export function isTestComplete(session: TestSession): boolean {
-  // Wenn retryAtEnd aktiv und noch Fehler vorhanden, ist der Test noch nicht fertig
   if (
     session.options.retryIncorrect &&
     session.options.retryAtEnd &&
@@ -346,7 +470,7 @@ export function isTestComplete(session: TestSession): boolean {
     session.currentIndex >= session.totalTasks &&
     session.incorrectTaskIds.length > 0
   ) {
-    return false; // nextTask wird den Wiederholungsmodus aktivieren
+    return false;
   }
 
   return session.currentIndex >= session.totalTasks;
@@ -378,23 +502,16 @@ export function getResults(session: TestSession): {
   tasks: TaskInstance[];
 } {
   const correct = session.results.filter((r) => r.isCorrect).length;
-  const total = session.totalTasks;
-  const percent = Math.round((correct / total) * 100);
+  const total = session.results.length;
+  const percent = total > 0 ? Math.round((correct / total) * 100) : 0;
 
   return {
     correct,
     total,
     percent,
     results: session.results,
-    tasks: session.tasks,
+    tasks: session.tasks.map(deserializeTask),
   };
-}
-
-/**
- * Löscht eine Session
- */
-export function deleteSession(id: string): void {
-  sessions.delete(id);
 }
 
 // Legacy-Exporte für Abwärtskompatibilität

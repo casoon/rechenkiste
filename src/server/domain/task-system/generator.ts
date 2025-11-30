@@ -17,19 +17,16 @@ function randomChoice<T>(arr: T[]): T {
 
 /**
  * Gewichtete Zufallsauswahl der Klassenstufe
- * - 50% aktuelle Klassenstufe
- * - 30% eine Stufe darunter
- * - 20% zufällig aus niedrigeren Stufen
+ * - 70% aktuelle Klassenstufe
+ * - 30% eine Stufe darunter (falls vorhanden)
  */
 function weightedRandomGrade(maxGrade: Grade): Grade {
   const rand = Math.random();
 
-  if (rand < 0.5) {
+  if (rand < 0.7 || maxGrade === 1) {
     return maxGrade;
-  } else if (rand < 0.8 && maxGrade > 1) {
-    return (maxGrade - 1) as Grade;
   } else {
-    return randomInt(1, maxGrade) as Grade;
+    return (maxGrade - 1) as Grade;
   }
 }
 
@@ -48,9 +45,42 @@ class TaskGeneratorImpl implements TaskGenerator {
 
   generateMany(grade: Grade, count: number, locale: Locale): TaskInstance[] {
     const tasks: TaskInstance[] = [];
+    const usedTypeIds = new Set<string>();
+
+    // Sammle alle verfügbaren Task-Definitionen für die relevanten Klassenstufen
+    const availableDefinitions = [
+      ...taskRegistry.getByGrade(grade),
+      ...(grade > 1 ? taskRegistry.getByGrade((grade - 1) as Grade) : []),
+    ];
 
     for (let i = 0; i < count; i++) {
-      tasks.push(this.generateOne(grade, locale));
+      // Filtere bereits verwendete Typen heraus
+      const unusedDefinitions = availableDefinitions.filter(
+        (def) => !usedTypeIds.has(def.typeId),
+      );
+
+      // Falls alle Typen verwendet wurden, erlaube Wiederholungen
+      const candidates =
+        unusedDefinitions.length > 0 ? unusedDefinitions : availableDefinitions;
+
+      // Gewichtete Auswahl: bevorzuge aktuelle Klassenstufe (70%)
+      const currentGradeDefs = candidates.filter((d) => d.grade === grade);
+      const lowerGradeDefs = candidates.filter((d) => d.grade < grade);
+
+      let definition;
+      if (
+        currentGradeDefs.length > 0 &&
+        (lowerGradeDefs.length === 0 || Math.random() < 0.7)
+      ) {
+        definition = randomChoice(currentGradeDefs);
+      } else if (lowerGradeDefs.length > 0) {
+        definition = randomChoice(lowerGradeDefs);
+      } else {
+        definition = randomChoice(candidates);
+      }
+
+      usedTypeIds.add(definition.typeId);
+      tasks.push(definition.generate(locale));
     }
 
     return tasks;

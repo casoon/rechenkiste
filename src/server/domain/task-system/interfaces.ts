@@ -95,6 +95,8 @@ export interface TaskInstance<TData = unknown> {
   readonly data: TData;
   // Eingabetyp (Standard: text)
   readonly inputType?: InputType;
+  // Label für das Eingabefeld
+  readonly inputLabel?: string;
   // Multiple-Choice Optionen (wenn inputType = "multiple-choice")
   readonly choices?: ChoiceOption[];
   // Drag-Drop Items (wenn inputType = "drag-drop")

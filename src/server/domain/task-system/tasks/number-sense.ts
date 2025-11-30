@@ -6,10 +6,10 @@
 
 import type { Locale } from "@i18n/translations";
 import type {
-  Grade,
   TaskDefinition,
   TaskInstance,
   ValidationResult,
+  ChoiceOption,
 } from "../interfaces";
 import { BaseTask, type NumberSenseData } from "../base-task";
 
@@ -17,8 +17,7 @@ import { BaseTask, type NumberSenseData } from "../base-task";
 const texts = {
   de: {
     sequence: "Welche Zahl fehlt?",
-    compare: "Welche Zahl ist größer?",
-    compareInstruction: "Trage <, > oder = ein",
+    compareInstruction: "Welches Zeichen passt?",
     neighbors: "Welche Zahl kommt direkt nach {num}?",
     neighborsBefore: "Welche Zahl kommt direkt vor {num}?",
     order: "Ordne die Zahlen der Größe nach. Welche ist die {position}?",
@@ -27,8 +26,7 @@ const texts = {
   },
   en: {
     sequence: "Which number is missing?",
-    compare: "Which number is bigger?",
-    compareInstruction: "Enter <, > or =",
+    compareInstruction: "Which sign fits?",
     neighbors: "Which number comes right after {num}?",
     neighborsBefore: "Which number comes right before {num}?",
     order: "Order the numbers by size. Which is the {position}?",
@@ -37,8 +35,7 @@ const texts = {
   },
   uk: {
     sequence: "Яке число пропущено?",
-    compare: "Яке число більше?",
-    compareInstruction: "Введи <, > або =",
+    compareInstruction: "Який знак підходить?",
     neighbors: "Яке число йде одразу після {num}?",
     neighborsBefore: "Яке число йде одразу перед {num}?",
     order: "Впорядкуй числа за розміром. Яке {position}?",
@@ -134,14 +131,18 @@ class SequenceTask extends BaseTask<NumberSenseData> {
 class CompareTask extends BaseTask<NumberSenseData> {
   validate(userAnswer: string): ValidationResult {
     const correctAnswer = this.data.answer as string;
-    const normalized = userAnswer.trim();
 
-    const isCorrect = normalized === correctAnswer;
+    // Multiple Choice: userAnswer ist die choice id (lt, gt, eq)
+    // Finde das gewählte Symbol
+    const choiceMap: Record<string, string> = { lt: "<", gt: ">", eq: "=" };
+    const userSymbol = choiceMap[userAnswer] || userAnswer.trim();
+
+    const isCorrect = userSymbol === correctAnswer;
 
     return {
       isCorrect,
       correctAnswer,
-      userAnswer: normalized,
+      userAnswer: userSymbol,
       hint: isCorrect ? undefined : this.getHint(),
     };
   }
@@ -267,12 +268,20 @@ export const compareSimple: TaskDefinition<NumberSenseData> = {
       answer = "=";
     }
 
+    const choices: ChoiceOption[] = [
+      { id: "lt", label: "<", value: "<" },
+      { id: "gt", label: ">", value: ">" },
+      { id: "eq", label: "=", value: "=" },
+    ];
+
     return new CompareTask({
       typeId: this.typeId,
       category: this.category,
       grade: this.grade,
       locale,
-      question: `${t.compare}\n\n${a}  ___  ${b}\n\n${t.compareInstruction}`,
+      question: `${a}  ___  ${b}\n${t.compareInstruction}`,
+      inputType: "multiple-choice",
+      choices,
       data: {
         subtype: "compare",
         numbers: [a, b],
@@ -410,12 +419,20 @@ export const compareMedium: TaskDefinition<NumberSenseData> = {
       answer = "=";
     }
 
+    const choices: ChoiceOption[] = [
+      { id: "lt", label: "<", value: "<" },
+      { id: "gt", label: ">", value: ">" },
+      { id: "eq", label: "=", value: "=" },
+    ];
+
     return new CompareTask({
       typeId: this.typeId,
       category: this.category,
       grade: this.grade,
       locale,
-      question: `${t.compare}\n\n${a}  ___  ${b}\n\n${t.compareInstruction}`,
+      question: `${a}  ___  ${b}\n${t.compareInstruction}`,
+      inputType: "multiple-choice",
+      choices,
       data: {
         subtype: "compare",
         numbers: [a, b],

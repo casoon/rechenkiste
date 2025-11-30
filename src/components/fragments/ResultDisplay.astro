@@ -142,12 +142,23 @@ if (percent >= 90) {
                         {results.map((result, index) => {
                             if (result.isCorrect) return null;
                             const task = tasks[index];
+                            const questionText =
+                                task.category === "word-problem"
+                                    ? task.data.story || task.question
+                                    : task.question;
+                            const hasSvg =
+                                questionText?.includes("<svg") ||
+                                questionText?.includes("<SVG");
+                            // Für SVG-Fragen: Nur den Text nach dem SVG anzeigen (die eigentliche Frage)
+                            const displayText = hasSvg
+                                ? questionText
+                                      .replace(/<svg[\s\S]*?<\/svg>/gi, "")
+                                      .trim()
+                                : questionText;
                             return (
                                 <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-left">
-                                    <p class="font-bold text-gray-800 mb-2">
-                                        {task.category === "word-problem"
-                                            ? task.data.story
-                                            : task.question}
+                                    <p class="font-bold text-gray-800 mb-2 whitespace-pre-line">
+                                        {displayText}
                                     </p>
                                     <p class="text-red-600">
                                         {t(locale, "yourAnswerWas", {

@@ -13,6 +13,19 @@ import type {
 } from "../interfaces";
 import { BaseTask, generateId, type ArithmeticData } from "../base-task";
 
+// Lokalisierte Texte
+const texts = {
+  de: {
+    calculateWritten: "Rechne schriftlich:",
+  },
+  en: {
+    calculateWritten: "Calculate in writing:",
+  },
+  uk: {
+    calculateWritten: "Обчисли письмово:",
+  },
+};
+
 // Lokalisierte Texte für Hints
 const hints = {
   de: {
@@ -666,9 +679,10 @@ export const multiplicationLarge: TaskDefinition<ArithmeticData> = {
   typeId: "arithmetic-mult-large",
   category: "arithmetic",
   grade: 5,
-  description: "Große Multiplikation",
+  description: "Große Multiplikation (schriftlich)",
 
   generate(locale: Locale): TaskInstance<ArithmeticData> {
+    const t = texts[locale] || texts.de;
     const a = randomInt(10, 50);
     const b = randomInt(10, 30);
     const answer = a * b;
@@ -678,7 +692,7 @@ export const multiplicationLarge: TaskDefinition<ArithmeticData> = {
       category: this.category,
       grade: this.grade,
       locale,
-      question: `${a} × ${b} = ?`,
+      question: `${t.calculateWritten}\n${a} × ${b} = ?`,
       data: { a, b, operator: "*", answer },
     });
   },
@@ -688,9 +702,10 @@ export const divisionLarge: TaskDefinition<ArithmeticData> = {
   typeId: "arithmetic-div-large",
   category: "arithmetic",
   grade: 5,
-  description: "Große Division",
+  description: "Große Division (schriftlich)",
 
   generate(locale: Locale): TaskInstance<ArithmeticData> {
+    const t = texts[locale] || texts.de;
     const b = randomInt(5, 12);
     const answer = randomInt(10, 25);
     const a = b * answer;
@@ -700,7 +715,7 @@ export const divisionLarge: TaskDefinition<ArithmeticData> = {
       category: this.category,
       grade: this.grade,
       locale,
-      question: `${a} ÷ ${b} = ?`,
+      question: `${t.calculateWritten}\n${a} ÷ ${b} = ?`,
       data: { a, b, operator: "/", answer },
     });
   },

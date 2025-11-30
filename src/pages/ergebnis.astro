@@ -1,35 +1,22 @@
 ---
-/**
- * Ergebnis-Seite
- *
- * Lädt das Ergebnis-Fragment via HTMX beim Seitenaufruf.
- * Das Fragment wird von @casoon/fragment-renderer gerendert.
- */
 import BaseLayout from "@layouts/BaseLayout.astro";
 import { t, getLocaleFromUrl, getLocalizedPath } from "@i18n/translations";
 import type { Locale } from "@i18n/translations";
-import { getSession, getResults } from "@domain/session";
+import { loadSession, getResults } from "@domain/session";
 import { renderResultFragment } from "@services/task-renderer";
 
 const locale: Locale = getLocaleFromUrl(Astro.url);
-const sessionId = Astro.url.searchParams.get("session");
 
-if (!sessionId) {
-    return Astro.redirect(getLocalizedPath("/", locale));
-}
-
-const session = getSession(sessionId);
+const session = await loadSession(Astro);
 if (!session) {
     return Astro.redirect(getLocalizedPath("/", locale));
 }
 
-// Render result fragment using @casoon/fragment-renderer
 const resultData = getResults(session);
 const resultHtml = await renderResultFragment(session, resultData, locale);
 ---
 
 <BaseLayout title={t(locale, "result")} locale={locale}>
-    <!-- Result Container - rendered via @casoon/fragment-renderer -->
     <div id="result-container" transition:name="main-card">
         <Fragment set:html={resultHtml} />
     </div>

@@ -85,25 +85,32 @@ const hints = {
   de: {
     fraction: "Zähle die markierten Teile und alle Teile insgesamt.",
     decimal: "1/2 = 0,5 | 1/4 = 0,25 | 3/4 = 0,75",
+    decimalAdd:
+      "Rechne erst die Nachkommastellen zusammen. 10 Zehntel = 1 Ganzes.",
     percent: "Prozent bedeutet 'von 100'. 50% = 50/100 = 1/2",
     add: "Bei gleichem Nenner: Zähler addieren, Nenner bleibt gleich.",
   },
   en: {
     fraction: "Count the marked parts and all parts in total.",
     decimal: "1/2 = 0.5 | 1/4 = 0.25 | 3/4 = 0.75",
+    decimalAdd: "First add the decimal places. 10 tenths = 1 whole.",
     percent: "Percent means 'out of 100'. 50% = 50/100 = 1/2",
     add: "Same denominator: add numerators, keep denominator.",
   },
   uk: {
     fraction: "Порахуй позначені частини і всі частини загалом.",
     decimal: "1/2 = 0,5 | 1/4 = 0,25 | 3/4 = 0,75",
+    decimalAdd: "Спочатку додай десяті. 10 десятих = 1 ціле.",
     percent: "Відсоток означає 'зі 100'. 50% = 50/100 = 1/2",
     add: "При однаковому знаменнику: додай чисельники, знаменник залишається.",
   },
 };
 
 // SVG für Bruch-Visualisierung (Kreis)
-function generateFractionCircleSvg(numerator: number, denominator: number): string {
+function generateFractionCircleSvg(
+  numerator: number,
+  denominator: number,
+): string {
   const cx = 100;
   const cy = 100;
   const r = 80;
@@ -125,7 +132,7 @@ function generateFractionCircleSvg(numerator: number, denominator: number): stri
 
     paths += `
       <path d="M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z"
-            fill="${filled ? '#4ecdc4' : '#e5e7eb'}"
+            fill="${filled ? "#4ecdc4" : "#e5e7eb"}"
             stroke="#333"
             stroke-width="2"/>
     `;
@@ -135,7 +142,10 @@ function generateFractionCircleSvg(numerator: number, denominator: number): stri
 }
 
 // SVG für Bruch-Visualisierung (Rechteck)
-function generateFractionBarSvg(numerator: number, denominator: number): string {
+function generateFractionBarSvg(
+  numerator: number,
+  denominator: number,
+): string {
   const width = 200;
   const height = 40;
   const partWidth = width / denominator;
@@ -145,7 +155,7 @@ function generateFractionBarSvg(numerator: number, denominator: number): string 
     const filled = i < numerator;
     rects += `
       <rect x="${i * partWidth}" y="0" width="${partWidth}" height="${height}"
-            fill="${filled ? '#4ecdc4' : '#e5e7eb'}"
+            fill="${filled ? "#4ecdc4" : "#e5e7eb"}"
             stroke="#333"
             stroke-width="2"/>
     `;
@@ -204,25 +214,34 @@ class DecimalTask extends BaseTask<DecimalData> {
     if (parsed === null) {
       return {
         isCorrect: false,
-        correctAnswer,
+        correctAnswer: this.formatAnswer(correctAnswer),
         userAnswer,
         hint: this.getHint(),
       };
     }
 
-    const isCorrect = this.compareNumeric(parsed, correctAnswer, 0.001);
+    const isCorrect = this.compareNumeric(parsed, correctAnswer, 0.01);
 
     return {
       isCorrect,
-      correctAnswer,
+      correctAnswer: this.formatAnswer(correctAnswer),
       userAnswer: parsed,
       hint: isCorrect ? undefined : this.getHint(),
     };
   }
 
+  private formatAnswer(value: number): string {
+    // Format mit Komma für deutsche Locale
+    if (this.locale === "de" || this.locale === "uk") {
+      return value.toFixed(1).replace(".", ",");
+    }
+    return value.toFixed(1);
+  }
+
   getHint(): string {
     const h = hints[this.locale] || hints.de;
-    return h.decimal;
+    // Unterschiedlicher Hinweis je nach Operation
+    return this.data.operation === "add" ? h.decimalAdd : h.decimal;
   }
 
   getCorrectAnswer(): number {
@@ -251,7 +270,8 @@ class PercentTask extends BaseTask<PercentData> {
 
     return {
       isCorrect,
-      correctAnswer: this.data.type === "convert" ? `${correctAnswer}%` : correctAnswer,
+      correctAnswer:
+        this.data.type === "convert" ? `${correctAnswer}%` : correctAnswer,
       userAnswer: parsed,
       hint: isCorrect ? undefined : this.getHint(),
     };
@@ -420,33 +440,34 @@ export const decimalAdd: TaskDefinition<DecimalData> = {
   },
 };
 
-export const percentIdentify: TaskDefinition<PercentData> = {
+export const percentIdentify: TaskDefinition<FractionData> = {
   typeId: "percent-identify",
   category: "arithmetic",
   grade: 5,
   description: "Prozent als Bruch",
 
-  generate(locale: Locale): TaskInstance<PercentData> {
+  generate(locale: Locale): TaskInstance<FractionData> {
     const t = fractionTexts[locale] || fractionTexts.de;
 
     // Einfache Prozente: 25%, 50%, 75%, 10%, 20%
-    const percents: [number, string][] = [
-      [25, "1/4"],
-      [50, "1/2"],
-      [75, "3/4"],
-      [10, "1/10"],
-      [20, "1/5"],
+    const percents: [number, number, number][] = [
+      [25, 1, 4], // 25% = 1/4
+      [50, 1, 2], // 50% = 1/2
+      [75, 3, 4], // 75% = 3/4
+      [10, 1, 10], // 10% = 1/10
+      [20, 1, 5], // 20% = 1/5
     ];
 
-    const [percent, fraction] = randomChoice(percents);
+    const [percent, numerator, denominator] = randomChoice(percents);
+    const answer = `${numerator}/${denominator}`;
 
-    return new PercentTask({
+    return new FractionTask({
       typeId: this.typeId,
       category: this.category,
       grade: this.grade,
       locale,
       question: `${t.whatIs} ${percent}% als Bruch?`,
-      data: { percent, answer: percent, type: "identify" },
+      data: { numerator, denominator, answer, type: "identify" },
     });
   },
 };
