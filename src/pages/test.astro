@@ -67,12 +67,41 @@ const taskHtml = await renderTaskFragment(currentTask, session.id, locale);
 </BaseLayout>
 
 <script>
+    function updateProgress(current: number, total: number, percent: number) {
+        const labels = document.querySelectorAll(
+            ".text-lg.font-bold.text-purple-700",
+        );
+        if (labels.length >= 2) {
+            labels[0].textContent = `Aufgabe ${current} von ${total}`;
+            labels[1].textContent = `${percent}%`;
+        }
+        const progressFill = document.querySelector(
+            ".progress-fill",
+        ) as HTMLElement;
+        if (progressFill) {
+            progressFill.style.width = `${percent}%`;
+        }
+    }
+
     document.addEventListener("htmx:afterSwap", (event) => {
         const target = (event as CustomEvent).detail.target;
+
+        // Feedback-Container: Formular ausblenden
         if (target.id === "feedback-container" && target.innerHTML.trim()) {
             const form = document.getElementById("answer-form");
             if (form) {
                 form.style.display = "none";
+            }
+        }
+
+        // Task-Container: Progress aktualisieren
+        if (target.id === "task-container") {
+            const wrapper = document.getElementById("task-wrapper");
+            if (wrapper) {
+                const current = parseInt(wrapper.dataset.current || "1");
+                const total = parseInt(wrapper.dataset.total || "10");
+                const percent = parseInt(wrapper.dataset.percent || "0");
+                updateProgress(current, total, percent);
             }
         }
     });

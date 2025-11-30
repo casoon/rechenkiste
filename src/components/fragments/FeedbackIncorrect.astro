@@ -47,9 +47,26 @@ const { locale, correctAnswer, hint, explanation, nextUrl, isComplete } =
     }
 
     <div class="mt-6">
-        <a href={nextUrl} class="btn-primary w-full inline-block text-center">
-            {isComplete ? t(locale, "showResult") : t(locale, "nextTask")} →
-        </a>
+        {
+            isComplete ? (
+                <a
+                    href={nextUrl}
+                    class="btn-primary w-full inline-block text-center"
+                >
+                    {t(locale, "showResult")} →
+                </a>
+            ) : (
+                <button
+                    type="button"
+                    class="btn-primary w-full"
+                    hx-get={`/api/test/task?locale=${locale}`}
+                    hx-target="#task-container"
+                    hx-swap="innerHTML"
+                >
+                    {t(locale, "nextTask")} →
+                </button>
+            )
+        }
     </div>
 </div>
 

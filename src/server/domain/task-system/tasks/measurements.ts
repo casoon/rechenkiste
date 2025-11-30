@@ -370,6 +370,16 @@ class UnitChoiceTask extends BaseTask<UnitChoiceData> {
  * Einheitenumrechnung-Aufgabe
  */
 class UnitConversionTask extends BaseTask<UnitConversionData> {
+  constructor(
+    config: ConstructorParameters<typeof BaseTask<UnitConversionData>>[0],
+  ) {
+    // Setze automatisch inputLabel auf die Ziel-Einheit
+    super({
+      ...config,
+      inputLabel: config.inputLabel || config.data.toUnit,
+    });
+  }
+
   validate(userAnswer: string): ValidationResult {
     const parsed = this.parseNumericAnswer(userAnswer);
     const correctAnswer = this.data.answer;

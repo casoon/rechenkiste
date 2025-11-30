@@ -75,12 +75,21 @@ function createRuntime(locale: Locale) {
 }
 
 /**
+ * Progress-Info für Task-Fragments
+ */
+export interface TaskProgress {
+  current: number;
+  total: number;
+}
+
+/**
  * Rendert eine Aufgabe als HTML-Fragment
  */
 export async function renderTaskFragment(
   task: TaskInstance,
   sessionId: string,
   locale: Locale,
+  progress?: TaskProgress,
 ): Promise<string> {
   const runtime = createRuntime(locale);
 
@@ -121,6 +130,7 @@ export async function renderTaskFragment(
       task,
       locale,
       sessionId,
+      progress,
     },
   });
 }

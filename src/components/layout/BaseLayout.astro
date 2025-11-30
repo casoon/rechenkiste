@@ -120,6 +120,14 @@ const currentPath = Astro.url.pathname.replace(/^\/(en|uk)/, "") || "/";
                     >
                         {t(locale, "techInfo")}
                     </a>
+                    <span class="text-gray-300">|</span>
+                    <span
+                        id="load-counter"
+                        class="text-gray-400 font-mono text-xs cursor-help"
+                        title="F = Fragment-Loads (HTMX), P = Page-Loads (Browser). Mehr Fragments = schnellere App!"
+                        hx-get="/api/test/counter"
+                        hx-trigger="load, taskLoaded from:body, feedbackShown from:body"
+                        hx-swap="innerHTML"></span>
                 </p>
             </footer>
         </div>

@@ -76,6 +76,9 @@ export interface TestSession {
   consecutiveIncorrect: number;
   incorrectTaskIds: string[];
   retryMode: boolean;
+  // Fragment-Counter für Performance-Messung
+  fragmentLoads: number;
+  pageLoads: number;
 }
 
 // ID-Generator
@@ -196,6 +199,8 @@ export function createSession(
     consecutiveIncorrect: 0,
     incorrectTaskIds: [],
     retryMode: false,
+    fragmentLoads: 0,
+    pageLoads: 1, // Erste Seite ist ein Page-Load
   };
 
   return session;
@@ -265,6 +270,8 @@ export function createCustomSession(
     consecutiveIncorrect: 0,
     incorrectTaskIds: [],
     retryMode: false,
+    fragmentLoads: 0,
+    pageLoads: 1,
   };
 
   return session;
@@ -512,6 +519,20 @@ export function getResults(session: TestSession): {
     results: session.results,
     tasks: session.tasks.map(deserializeTask),
   };
+}
+
+/**
+ * Inkrementiert den Fragment-Load-Counter
+ */
+export function incrementFragmentLoads(session: TestSession): void {
+  session.fragmentLoads = (session.fragmentLoads || 0) + 1;
+}
+
+/**
+ * Inkrementiert den Page-Load-Counter
+ */
+export function incrementPageLoads(session: TestSession): void {
+  session.pageLoads = (session.pageLoads || 0) + 1;
 }
 
 // Legacy-Exporte für Abwärtskompatibilität

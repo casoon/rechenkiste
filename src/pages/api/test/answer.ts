@@ -5,6 +5,7 @@ import {
   submitAnswer,
   nextTask,
   isTestComplete,
+  incrementFragmentLoads,
 } from "@domain/session";
 import type { Locale } from "@i18n/translations";
 import { getLocalizedPath } from "@i18n/translations";
@@ -37,6 +38,9 @@ export const POST: APIRoute = async (context) => {
 
   // Move to next task
   nextTask(session);
+
+  // Fragment-Load zählen
+  incrementFragmentLoads(session);
 
   // Speichere aktualisierte Session
   await saveSession(context as any, session);

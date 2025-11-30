@@ -14,11 +14,18 @@ const { task, locale, sessionId } = Astro.props;
 // Prüfe ob die Frage SVG enthält
 const hasSvg = task.question.includes("<svg");
 
+// Prüfe ob Dezimal-Eingabe erwartet wird (hat Vorrang)
+const needsDecimalInput =
+    task.typeId?.includes("to-decimal") || // "Bruch als Dezimalzahl"
+    task.typeId?.includes("decimal") || // Dezimalzahlen-Aufgaben
+    task.question.toLowerCase().includes("dezimalzahl");
+
 // Prüfe ob Bruch-Eingabe nötig ist (Antwort enthält /)
 const needsFractionInput =
-    task.question.includes("/") || // Brüche wie 1/5
-    task.typeId?.includes("fraction") ||
-    task.typeId === "percent-identify"; // "Was ist X% als Bruch?"
+    !needsDecimalInput && // Dezimal hat Vorrang
+    (task.question.includes("/") || // Brüche wie 1/5
+        task.typeId?.includes("fraction") ||
+        task.typeId === "percent-identify"); // "Was ist X% als Bruch?"
 
 // Erlaubte Zeichen für die Eingabe als Regex-Pattern
 // Brüche: nur 0-9 und /

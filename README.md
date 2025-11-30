@@ -2,24 +2,27 @@
 
 A math practice application for elementary school children, built with the AHA-Stack and demonstrating the `@casoon/fragment-renderer` library.
 
-**Live Demo:** [rechenkiste.casoon.dev](https://rechenkiste.casoon.dev)
+**Live Demo:** [rechenkiste.casoon.workers.dev](https://rechenkiste.casoon.workers.dev)
 
 ## Features
 
-- **Grade-based exercises** (Grades 1-4) with age-appropriate difficulty
+- **Grade-based exercises** (Grades 1-5) with age-appropriate difficulty
 - **Multiple task categories:**
   - Arithmetic (addition, subtraction, multiplication, division)
   - Number sense (comparing, ordering, number lines)
-  - Geometry (shapes, symmetry, coordinates)
+  - Geometry (shapes, perimeter, area, coordinates)
   - Fractions and visual representations
+  - Percentages and decimal conversions
   - Time and clock reading
   - Word problems
-  - Measurements (length, weight, volume)
+  - Measurements (length, weight, volume, area units)
 - **Interactive task types:** Multiple choice, drag-and-drop, text input
 - **Adaptive difficulty:** Adjusts based on correct/incorrect answers
 - **Error retry system:** Missed questions are repeated for reinforcement
 - **Multi-language support:** German (de), English (en), Ukrainian (uk)
 - **SVG visualizations** for geometry, fractions, and clock tasks
+- **Fragment-based navigation:** HTMX-powered task switching without page reloads
+- **Performance counter:** Shows Fragment vs Page loads to demonstrate efficiency
 
 ## Tech Stack (AHA-Stack)
 
@@ -90,16 +93,16 @@ pnpm preview
 
 ## Deployment (Cloudflare Workers)
 
-The project is configured for Cloudflare Workers deployment:
+The project is configured for Cloudflare Workers with KV session storage:
 
 ```bash
 # Build and deploy
-pnpm deploy
+pnpm cf-deploy
 ```
 
 Configuration files:
-- `wrangler.toml` - Cloudflare Workers configuration
-- `astro.config.mjs` - Astro with Cloudflare adapter
+- `wrangler.toml` - Cloudflare Workers configuration with KV binding
+- `astro.config.mjs` - Astro with Cloudflare adapter and session config
 
 ## Fragment Renderer Usage
 

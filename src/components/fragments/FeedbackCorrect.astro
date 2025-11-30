@@ -13,8 +13,11 @@ const { locale, nextUrl, isComplete } = Astro.props;
 
 <div
     class="feedback-correct bounce-in"
+    id="feedback-correct"
     data-next-url={nextUrl}
     data-delay="1500"
+    data-is-complete={isComplete ? "true" : "false"}
+    data-locale={locale}
 >
     <div class="text-4xl mb-2">🎉</div>
     <p>{t(locale, "correct")}</p>
@@ -57,15 +60,35 @@ const { locale, nextUrl, isComplete } = Astro.props;
 
 <script is:inline>
     (function () {
-        const feedback = document.querySelector(
-            ".feedback-correct[data-next-url]",
-        );
+        const feedback = document.getElementById("feedback-correct");
         if (feedback) {
             const nextUrl = feedback.dataset.nextUrl;
             const delay = parseInt(feedback.dataset.delay || "1500", 10);
+            const isComplete = feedback.dataset.isComplete === "true";
+            const locale = feedback.dataset.locale || "de";
+
             setTimeout(function () {
                 if (nextUrl) {
-                    window.location.href = nextUrl;
+                    if (isComplete) {
+                        // Bei Abschluss: volle Seite laden
+                        window.location.href = nextUrl;
+                    } else {
+                        // Nächste Aufgabe: Fragment per HTMX laden
+                        const taskContainer =
+                            document.getElementById("task-container");
+                        if (taskContainer && window.htmx) {
+                            htmx.ajax(
+                                "GET",
+                                "/api/test/task?locale=" + locale,
+                                {
+                                    target: "#task-container",
+                                    swap: "innerHTML",
+                                },
+                            );
+                        } else {
+                            window.location.href = nextUrl;
+                        }
+                    }
                 }
             }, delay);
         }

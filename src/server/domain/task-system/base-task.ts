@@ -35,6 +35,7 @@ export abstract class BaseTask<TData = unknown> implements TaskInstance<TData> {
   readonly question: string;
   readonly data: TData;
   readonly inputType?: InputType;
+  readonly inputLabel?: string;
   readonly choices?: ChoiceOption[];
   readonly dragItems?: DragDropItem[];
   readonly dropTargets?: DragDropTarget[];
@@ -47,6 +48,7 @@ export abstract class BaseTask<TData = unknown> implements TaskInstance<TData> {
     question: string;
     data: TData;
     inputType?: InputType;
+    inputLabel?: string;
     choices?: ChoiceOption[];
     dragItems?: DragDropItem[];
     dropTargets?: DragDropTarget[];
@@ -59,6 +61,7 @@ export abstract class BaseTask<TData = unknown> implements TaskInstance<TData> {
     this.question = params.question;
     this.data = params.data;
     this.inputType = params.inputType;
+    this.inputLabel = params.inputLabel;
     this.choices = params.choices;
     this.dragItems = params.dragItems;
     this.dropTargets = params.dropTargets;
