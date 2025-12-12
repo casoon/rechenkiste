@@ -202,7 +202,7 @@ const catLabels = categoryLabels[locale];
                     Object.entries(tasksByGrade).map(([grade, tasks]) => (
                         <div class="border-2 border-gray-100 rounded-xl overflow-hidden">
                             <div
-                                class="bg-gradient-to-r from-purple-100 to-purple-50 p-3 flex justify-between items-center cursor-pointer"
+                                class="bg-linear-to-r from-purple-100 to-purple-50 p-3 flex justify-between items-center cursor-pointer"
                                 @click={`toggleGrade(${grade})`}
                             >
                                 <h3 class="font-bold text-purple-700">

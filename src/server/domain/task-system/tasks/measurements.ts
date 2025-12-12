@@ -224,21 +224,11 @@ const hints = {
 };
 
 // Formatierung
-function formatMoney(euros: number, cents: number, locale: Locale): string {
+function formatMoney(euros: number, cents: number): string {
   if (cents === 0) {
     return `${euros} €`;
   }
   return `${euros},${cents.toString().padStart(2, "0")} €`;
-}
-
-function formatCents(cents: number, locale: Locale): string {
-  const t = moneyTexts[locale] || moneyTexts.de;
-  if (cents >= 100) {
-    const euros = Math.floor(cents / 100);
-    const remainingCents = cents % 100;
-    return formatMoney(euros, remainingCents, locale);
-  }
-  return `${cents} ${t.cents}`;
 }
 
 /**
@@ -269,7 +259,6 @@ class MoneyTask extends BaseTask<MoneyData> {
       correctAnswer: formatMoney(
         Math.floor(correctAnswer),
         Math.round((correctAnswer % 1) * 100),
-        this.locale,
       ),
       userAnswer: userAnswer,
       hint: isCorrect ? undefined : this.getHint(),
@@ -463,10 +452,7 @@ export const moneyAddWithCents: TaskDefinition<MoneyData> = {
       category: this.category,
       grade: this.grade,
       locale,
-      question: t.add(
-        formatMoney(euros1, cents1, locale),
-        formatMoney(euros2, cents2, locale),
-      ),
+      question: t.add(formatMoney(euros1, cents1), formatMoney(euros2, cents2)),
       data: {
         euros: Math.floor(answer),
         cents: Math.round((answer % 1) * 100),

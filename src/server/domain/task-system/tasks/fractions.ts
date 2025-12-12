@@ -416,8 +416,6 @@ export const fractionAddSameDenom: TaskDefinition<FractionData> = {
   description: "Brüche addieren (gleicher Nenner)",
 
   generate(locale: Locale): TaskInstance<FractionData> {
-    const t = fractionTexts[locale] || fractionTexts.de;
-
     const denominator = randomChoice([4, 5, 6, 8, 10]);
     const num1 = randomInt(1, Math.floor(denominator / 2));
     const num2 = randomInt(1, denominator - num1 - 1);
@@ -445,8 +443,6 @@ export const decimalAdd: TaskDefinition<DecimalData> = {
   description: "Dezimalzahlen addieren",
 
   generate(locale: Locale): TaskInstance<DecimalData> {
-    const t = fractionTexts[locale] || fractionTexts.de;
-
     // Einfache Dezimalzahlen mit einer Nachkommastelle
     const a = randomInt(1, 9) + randomInt(1, 9) / 10;
     const b = randomInt(1, 9) + randomInt(1, 9) / 10;

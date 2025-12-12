@@ -147,8 +147,6 @@ function generateCoordinateSystemSvg(
   const height = 240;
   const margin = 30;
   const gridSize = (width - 2 * margin) / 8;
-  const originX = margin;
-  const originY = height - margin;
 
   // Gitterlinien
   let grid = "";
@@ -630,8 +628,6 @@ export const negativeAddition: TaskDefinition<NegativeNumberData> = {
   description: "Addition mit negativen Zahlen",
 
   generate(locale: Locale): TaskInstance<NegativeNumberData> {
-    const t = texts[locale] || texts.de;
-
     // Verschiedene Szenarien
     const scenarios = [
       // positiv + negativ
@@ -665,8 +661,6 @@ export const negativeSubtraction: TaskDefinition<NegativeNumberData> = {
   description: "Subtraktion mit negativen Zahlen",
 
   generate(locale: Locale): TaskInstance<NegativeNumberData> {
-    const t = texts[locale] || texts.de;
-
     const scenarios = [
       // positiv - größere Zahl
       { a: randomInt(3, 10), b: randomInt(11, 20) },

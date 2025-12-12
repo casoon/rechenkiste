@@ -179,8 +179,6 @@ export const multipleChoiceAdd: TaskDefinition<MultipleChoiceData> = {
   description: "Multiple-Choice Addition",
 
   generate(locale: Locale): TaskInstance<MultipleChoiceData> {
-    const t = texts[locale] || texts.de;
-
     const a = randomInt(2, 10);
     const b = randomInt(2, 10);
     const correctAnswer = a + b;
@@ -225,8 +223,6 @@ export const multipleChoiceMult: TaskDefinition<MultipleChoiceData> = {
   description: "Multiple-Choice Multiplikation",
 
   generate(locale: Locale): TaskInstance<MultipleChoiceData> {
-    const t = texts[locale] || texts.de;
-
     const a = randomInt(2, 10);
     const b = randomInt(2, 10);
     const correctAnswer = a * b;
@@ -347,7 +343,7 @@ export const dragDropOrder: TaskDefinition<DragDropData> = {
 
     // Items sind die Zahlen
     const dragItems: DragDropItem[] = shuffle(
-      numbers.map((n, i) => ({
+      numbers.map((n) => ({
         id: `num-${n}`,
         content: String(n),
         correctTarget: `pos-${sorted.indexOf(n)}`,
@@ -488,7 +484,7 @@ export const dragDropFractions: TaskDefinition<DragDropData> = {
 
     // Targets sind die Dezimalzahlen (shuffled)
     const shuffledPairs = shuffle([...fractionPairs]);
-    const dropTargets: DragDropTarget[] = shuffledPairs.map((pair, i) => ({
+    const dropTargets: DragDropTarget[] = shuffledPairs.map((pair) => ({
       id: `dec-${fractionPairs.indexOf(pair)}`,
       label: pair.decimal,
     }));

@@ -601,7 +601,6 @@ export const symmetryRecognize: TaskDefinition<SymmetryData> = {
 
     const yesId = "yes-" + Math.random().toString(36).substring(2, 8);
     const noId = "no-" + Math.random().toString(36).substring(2, 8);
-    const correctId = isSymmetric ? yesId : noId;
 
     return new SymmetryTask({
       typeId: this.typeId,
