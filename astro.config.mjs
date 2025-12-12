@@ -18,6 +18,11 @@ export default defineConfig({
   }),
   vite: {
     plugins: [tailwindcss()],
+    server: {
+      watch: {
+        ignored: ["**/.wrangler/**"],
+      },
+    },
   },
   i18n: {
     defaultLocale: "de",
