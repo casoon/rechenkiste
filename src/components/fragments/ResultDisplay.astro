@@ -1,7 +1,7 @@
 ---
 import { t, getLocalizedPath } from "@i18n/translations";
 import type { Locale } from "@i18n/translations";
-import type { TestSession } from "@domain/session";
+import type { TestSession, SerializedTask } from "@domain/session";
 
 interface ResultData {
     correct: number;
@@ -12,11 +12,7 @@ interface ResultData {
         userAnswer: string | number;
         correctAnswer: string | number;
     }>;
-    tasks: Array<{
-        category: string;
-        question: string;
-        data: { story?: string };
-    }>;
+    tasks: Array<SerializedTask>;
 }
 
 interface Props {
@@ -27,6 +23,69 @@ interface Props {
 
 const { locale, session, resultData } = Astro.props;
 const { correct, total, percent, results, tasks } = resultData;
+
+// Formatiert die Benutzerantwort für die Anzeige
+function formatUserAnswer(answer: string | number, task: SerializedTask): string {
+    const answerStr = String(answer);
+
+    // Multiple-Choice: Label statt ID anzeigen
+    if (task.inputType === "multiple-choice" && task.choices) {
+        const choice = task.choices.find(c => c.id === answerStr);
+        if (choice) {
+            return choice.label;
+        }
+    }
+
+    // Drag-Drop: Lesbare Zuordnung anzeigen
+    if (task.inputType === "drag-drop" && task.dragItems && task.dropTargets) {
+        try {
+            const assignments = JSON.parse(answerStr);
+            const parts: string[] = [];
+            for (const [itemId, targetId] of Object.entries(assignments)) {
+                const item = task.dragItems.find(i => i.id === itemId);
+                const target = task.dropTargets.find(t => t.id === targetId);
+                if (item && target) {
+                    parts.push(`${item.content} → ${target.label}`);
+                }
+            }
+            return parts.join(", ");
+        } catch {
+            return answerStr;
+        }
+    }
+
+    // Geld-Aufgaben: € hinzufügen wenn nötig
+    if (task.typeId?.includes("money") && !answerStr.includes("€")) {
+        return `${answerStr} €`;
+    }
+
+    return answerStr;
+}
+
+// Formatiert die korrekte Antwort für die Anzeige
+function formatCorrectAnswer(answer: string | number, task: SerializedTask): string {
+    const answerStr = String(answer);
+
+    // Drag-Drop: Lesbare Zuordnung anzeigen
+    if (task.inputType === "drag-drop" && task.dragItems && task.dropTargets) {
+        try {
+            const assignments = JSON.parse(answerStr);
+            const parts: string[] = [];
+            for (const [itemId, targetId] of Object.entries(assignments)) {
+                const item = task.dragItems.find(i => i.id === itemId);
+                const target = task.dropTargets.find(t => t.id === targetId);
+                if (item && target) {
+                    parts.push(`${item.content} → ${target.label}`);
+                }
+            }
+            return parts.join(", ");
+        } catch {
+            return answerStr;
+        }
+    }
+
+    return answerStr;
+}
 
 // Determine feedback message based on percentage
 let feedbackKey: "excellent" | "great" | "good" | "keepPracticing";
@@ -142,9 +201,10 @@ if (percent >= 90) {
                         {results.map((result, index) => {
                             if (result.isCorrect) return null;
                             const task = tasks[index];
+                            const taskData = task.data as { story?: string } | undefined;
                             const questionText =
-                                task.category === "word-problem"
-                                    ? task.data.story || task.question
+                                task.category === "word-problem" && taskData?.story
+                                    ? taskData.story
                                     : task.question;
                             const hasSvg =
                                 questionText?.includes("<svg") ||
@@ -162,12 +222,12 @@ if (percent >= 90) {
                                     </p>
                                     <p class="text-red-600">
                                         {t(locale, "yourAnswerWas", {
-                                            answer: result.userAnswer,
+                                            answer: formatUserAnswer(result.userAnswer, task),
                                         })}
                                     </p>
                                     <p class="text-green-600">
                                         {t(locale, "correctAnswer", {
-                                            answer: result.correctAnswer,
+                                            answer: formatCorrectAnswer(result.correctAnswer, task),
                                         })}
                                     </p>
                                 </div>
