@@ -32,6 +32,10 @@ export type {
   TaskRenderer,
   TaskRenderInfo,
   ValidationResult,
+  InputType,
+  ChoiceOption,
+  DragDropItem,
+  DragDropTarget,
 } from "./interfaces";
 
 // Registry & Generator

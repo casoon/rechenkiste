@@ -6,12 +6,11 @@
 
 import type { Locale } from "@i18n/translations";
 import type {
-  Grade,
   TaskDefinition,
   TaskInstance,
   ValidationResult,
 } from "../interfaces";
-import { BaseTask, generateId, type ArithmeticData } from "../base-task";
+import { BaseTask, type ArithmeticData } from "../base-task";
 
 // Lokalisierte Texte
 const texts = {

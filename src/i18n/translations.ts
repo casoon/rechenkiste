@@ -242,7 +242,7 @@ export function t(
   key: TranslationKey,
   params?: Record<string, string | number>,
 ): string {
-  let text = translations[locale][key] || translations.de[key] || key;
+  let text: string = translations[locale][key] || translations.de[key] || key;
 
   if (params) {
     Object.entries(params).forEach(([param, value]) => {

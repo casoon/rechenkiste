@@ -20,13 +20,6 @@ import FeedbackIncorrect from "@fragments/FeedbackIncorrect.astro";
 import ResultDisplay from "@fragments/ResultDisplay.astro";
 import type { TestSession } from "@domain/session";
 
-// Component-Map für Aufgaben-Kategorien
-const taskComponentMap: Record<string, typeof TaskArithmetic> = {
-  arithmetic: TaskArithmetic,
-  "word-problem": TaskWord,
-  geometry: TaskGeometry,
-};
-
 // Create runtime with AHA-Stack preset
 function createRuntime(locale: Locale) {
   const preset = ahaStackPreset({ locale, htmxHeaders: true });
@@ -110,7 +103,12 @@ export async function renderTaskFragment(
       case "geometry":
         // Nur echte Geometrie-Tasks mit svgMarkup in data verwenden TaskGeometry
         // Andere (wie Koordinaten, Dreieck, Quader) haben SVG in question
-        if (task.data && "svgMarkup" in task.data && "prompt" in task.data) {
+        if (
+          task.data &&
+          typeof task.data === "object" &&
+          "svgMarkup" in task.data &&
+          "prompt" in task.data
+        ) {
           return "task-geometry";
         }
         return "task-arithmetic";
@@ -208,7 +206,7 @@ export async function renderResultFragment(
     tasks: Array<{
       category: string;
       question: string;
-      data: { story?: string };
+      data: unknown;
     }>;
   },
   locale: Locale,
@@ -242,7 +240,7 @@ export async function renderResultResponse(
     tasks: Array<{
       category: string;
       question: string;
-      data: { story?: string };
+      data: unknown;
     }>;
   },
   locale: Locale,

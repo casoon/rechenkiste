@@ -6,7 +6,6 @@
 
 import type { Locale } from "@i18n/translations";
 import type {
-  Grade,
   TaskDefinition,
   TaskInstance,
   ValidationResult,

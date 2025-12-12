@@ -39,7 +39,7 @@ export default defineConfig({
           }
 
           // Alle .js und .mjs Dateien im Worker-Verzeichnis durchsuchen
-          const patchFiles = (directory) => {
+          const patchFiles = (/** @type {string} */ directory) => {
             const entries = fs.readdirSync(directory, { withFileTypes: true });
             for (const entry of entries) {
               const fullPath = path.join(directory, entry.name);

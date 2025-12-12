@@ -1,5 +1,5 @@
 ---
-import { ViewTransitions } from "astro:transitions";
+import { ClientRouter } from "astro:transitions";
 import "@styles/base.css";
 import type { Locale } from "@i18n/translations";
 import { t, getLocalizedPath } from "@i18n/translations";
@@ -28,7 +28,7 @@ const currentPath = Astro.url.pathname.replace(/^\/(en|uk)/, "") || "/";
         <meta name="description" content={t(locale, "tagline")} />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <title>{title} - {t(locale, "appName")}</title>
-        <ViewTransitions />
+        <ClientRouter />
         <script is:inline src="https://unpkg.com/htmx.org@2.0.4"></script>
         <script
             is:inline

@@ -6,7 +6,6 @@
 
 import type { Locale } from "@i18n/translations";
 import type {
-  Grade,
   TaskDefinition,
   TaskInstance,
   ValidationResult,
@@ -253,11 +252,8 @@ function generateSymmetrySvg(isSymmetric: boolean): {
         break;
     }
 
-    // Symmetrieachse einzeichnen
-    const axisLine =
-      axisType === "horizontal"
-        ? `<line x1="20" y1="${cy}" x2="180" y2="${cy}" stroke="#999" stroke-width="1" stroke-dasharray="5,5"/>`
-        : `<line x1="${cx}" y1="10" x2="${cx}" y2="140" stroke="#999" stroke-width="1" stroke-dasharray="5,5"/>`;
+    // Symmetrieachse einzeichnen (vertikal, da alle Formen mindestens vertikal symmetrisch sind)
+    const axisLine = `<line x1="${cx}" y1="10" x2="${cx}" y2="140" stroke="#999" stroke-width="1" stroke-dasharray="5,5"/>`;
 
     return {
       svg: `<svg viewBox="0 0 ${width} ${height}" class="w-full h-36 bg-white rounded-lg border">${shape}${axisLine}</svg>`,
