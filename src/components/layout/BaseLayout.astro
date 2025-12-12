@@ -7,9 +7,23 @@ import { t, getLocalizedPath } from "@i18n/translations";
 interface Props {
     title: string;
     locale?: Locale;
+    description?: string;
 }
 
-const { title, locale = "de" } = Astro.props;
+const { title, locale = "de", description } = Astro.props;
+
+const siteUrl = "https://rechenkiste.casoon.workers.dev";
+const currentUrl = `${siteUrl}${Astro.url.pathname}`;
+
+// SEO Descriptions per locale
+const seoDescriptions = {
+    de: "Kostenlose Mathe-Übungen für Grundschulkinder. Rechnen, Geometrie und Textaufgaben für Klasse 1-5. Interaktiv und kindgerecht.",
+    en: "Free math exercises for elementary school children. Arithmetic, geometry and word problems for grades 1-5. Interactive and child-friendly.",
+    uk: "Безкоштовні математичні вправи для дітей початкової школи. Арифметика, геометрія та текстові задачі для 1-5 класів.",
+};
+
+const metaDescription = description || seoDescriptions[locale];
+const fullTitle = `${title} - ${t(locale, "appName")}`;
 
 const locales: { code: Locale; label: string; flag: string }[] = [
     { code: "de", label: "Deutsch", flag: "🇩🇪" },
@@ -25,9 +39,76 @@ const currentPath = Astro.url.pathname.replace(/^\/(en|uk)/, "") || "/";
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="description" content={t(locale, "tagline")} />
+
+        <!-- SEO Meta Tags -->
+        <title>{fullTitle}</title>
+        <meta name="description" content={metaDescription} />
+        <meta name="keywords" content="Mathe, Mathematik, Grundschule, Kinder, Rechnen, Übungen, Klasse 1-5, kostenlos, interaktiv" />
+        <meta name="author" content="casoon.de" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={currentUrl} />
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={currentUrl} />
+        <meta property="og:title" content={fullTitle} />
+        <meta property="og:description" content={metaDescription} />
+        <meta property="og:image" content={`${siteUrl}/icons/icon-512.svg`} />
+        <meta property="og:locale" content={locale === "de" ? "de_DE" : locale === "en" ? "en_US" : "uk_UA"} />
+        <meta property="og:site_name" content={t(locale, "appName")} />
+
+        <!-- Twitter -->
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={fullTitle} />
+        <meta name="twitter:description" content={metaDescription} />
+        <meta name="twitter:image" content={`${siteUrl}/icons/icon-512.svg`} />
+
+        <!-- Favicon & App Icons -->
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <title>{title} - {t(locale, "appName")}</title>
+        <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#8B5CF6" />
+
+        <!-- Mobile App Meta -->
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content={t(locale, "appName")} />
+        <meta name="application-name" content={t(locale, "appName")} />
+
+        <!-- Language alternates -->
+        <link rel="alternate" hreflang="de" href={`${siteUrl}/`} />
+        <link rel="alternate" hreflang="en" href={`${siteUrl}/en/`} />
+        <link rel="alternate" hreflang="uk" href={`${siteUrl}/uk/`} />
+        <link rel="alternate" hreflang="x-default" href={`${siteUrl}/`} />
+
+        <!-- Structured Data (JSON-LD) -->
+        <script type="application/ld+json" set:html={JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": t(locale, "appName"),
+            "description": metaDescription,
+            "url": siteUrl,
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Any",
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "EUR"
+            },
+            "audience": {
+                "@type": "EducationalAudience",
+                "educationalRole": "student",
+                "suggestedMinAge": 6,
+                "suggestedMaxAge": 12
+            },
+            "inLanguage": [locale],
+            "author": {
+                "@type": "Organization",
+                "name": "casoon.de",
+                "url": "https://www.casoon.de"
+            }
+        })} />
+
         <ClientRouter />
         <script is:inline src="https://unpkg.com/htmx.org@2.0.4"></script>
         <script
