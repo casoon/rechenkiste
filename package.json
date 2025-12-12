@@ -11,6 +11,9 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "check": "astro check",
+    "lint": "eslint 'src/**/*.{astro,ts,js}'",
+    "lint:fix": "eslint 'src/**/*.{astro,ts,js}' --fix",
     "cf-deploy": "astro build && echo '_worker.js' > dist/.assetsignore && wrangler deploy",
     "astro": "astro"
   },
@@ -25,7 +28,12 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.6",
+    "@eslint/js": "^9.39.1",
     "@types/alpinejs": "^3.13.0",
+    "@typescript-eslint/parser": "^8.49.0",
+    "astro-eslint-parser": "^1.2.2",
+    "eslint": "^9.39.1",
+    "eslint-plugin-better-tailwindcss": "^3.8.0",
     "typescript": "^5.9.3",
     "wrangler": "^4.51.0"
   }
