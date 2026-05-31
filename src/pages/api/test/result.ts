@@ -7,7 +7,7 @@ export const GET: APIRoute = async (context) => {
   const { url } = context;
   const locale = (url.searchParams.get("locale") as Locale) || "de";
 
-  const session = await loadSession(context as any);
+  const session = await loadSession(context);
   if (!session) {
     return new Response("Session not found", { status: 404 });
   }

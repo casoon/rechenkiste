@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { loadSession } from "@domain/session";
 
 export const GET: APIRoute = async (context) => {
-  const session = await loadSession(context as any);
+  const session = await loadSession(context);
 
   const f = session?.fragmentLoads || 0;
   const p = session?.pageLoads || 0;
@@ -13,6 +13,7 @@ export const GET: APIRoute = async (context) => {
     status: 200,
     headers: {
       "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store, no-cache, must-revalidate",
     },
   });
 };

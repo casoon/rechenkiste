@@ -36,7 +36,7 @@ export const POST: APIRoute = async (context) => {
   const session = createSession(grade, count, locale, options);
 
   // Speichere Session in Astro Session (KV)
-  await saveSession(context as any, session);
+  await saveSession(context, session);
 
   return redirect(getLocalizedPath("/test", locale));
 };

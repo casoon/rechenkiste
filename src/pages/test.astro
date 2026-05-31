@@ -34,7 +34,7 @@ const taskHtml = await renderTaskFragment(currentTask, session.id, locale);
         transition:name="main-card"
     >
         <div class="mb-6" transition:name="progress">
-            <div class="flex justify-between items-center mb-2">
+            <div class="flex justify-between items-center mb-2" id="progress-header" data-template={t(locale, "taskOf", { current: "{current}", total: "{total}" })}>
                 <span class="text-lg font-bold text-purple-700">
                     {
                         t(locale, "taskOf", {
@@ -68,11 +68,13 @@ const taskHtml = await renderTaskFragment(currentTask, session.id, locale);
 
 <script>
     function updateProgress(current: number, total: number, percent: number) {
+        const header = document.getElementById("progress-header");
+        const template = header?.dataset.template || "Aufgabe {current} von {total}";
         const labels = document.querySelectorAll(
             ".text-lg.font-bold.text-purple-700",
         );
         if (labels.length >= 2) {
-            labels[0].textContent = `Aufgabe ${current} von ${total}`;
+            labels[0].textContent = template.replace("{current}", String(current)).replace("{total}", String(total));
             labels[1].textContent = `${percent}%`;
         }
         const progressFill = document.querySelector(

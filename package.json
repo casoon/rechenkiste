@@ -14,27 +14,29 @@
     "check": "astro check",
     "lint": "eslint 'src/**/*.{astro,ts,js}'",
     "lint:fix": "eslint 'src/**/*.{astro,ts,js}' --fix",
-    "cf-deploy": "astro build && echo '_worker.js' > dist/.assetsignore && wrangler deploy",
+    "cf-deploy": "astro build && wrangler deploy",
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^12.6.12",
-    "@casoon/fragment-renderer": "^0.1.0",
-    "@tailwindcss/vite": "^4.1.17",
-    "alpinejs": "^3.14.0",
-    "astro": "^5.16.3",
-    "htmx.org": "^2.0.0",
-    "tailwindcss": "^4.1.17"
+    "@astrojs/cloudflare": "^13.6.0",
+    "@casoon/fragment-renderer": "^0.1.1",
+    "@fontsource/comic-neue": "^5.2.7",
+    "@tailwindcss/vite": "^4.3.0",
+    "alpinejs": "^3.15.12",
+    "astro": "^6.4.2",
+    "htmx.org": "^2.0.10",
+    "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.6",
-    "@eslint/js": "^9.39.1",
-    "@types/alpinejs": "^3.13.0",
-    "@typescript-eslint/parser": "^8.49.0",
-    "astro-eslint-parser": "^1.2.2",
-    "eslint": "^9.39.1",
-    "eslint-plugin-better-tailwindcss": "^3.8.0",
-    "typescript": "^5.9.3",
-    "wrangler": "^4.51.0"
+    "@astrojs/check": "^0.9.9",
+    "@casoon/astro-site-files": "^0.4.0",
+    "@eslint/js": "^10.0.1",
+    "@types/alpinejs": "^3.13.11",
+    "@typescript-eslint/parser": "^8.60.0",
+    "astro-eslint-parser": "^1.4.0",
+    "eslint": "^10.4.1",
+    "eslint-plugin-better-tailwindcss": "^4.5.0",
+    "typescript": "^6.0.3",
+    "wrangler": "^4.95.0"
   }
 }

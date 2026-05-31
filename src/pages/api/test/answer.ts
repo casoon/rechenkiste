@@ -23,7 +23,7 @@ export const POST: APIRoute = async (context) => {
   }
 
   // Lade Session aus Astro Session
-  const session = await loadSession(context as any);
+  const session = await loadSession(context);
 
   if (!session) {
     return new Response("Session not found", { status: 404 });
@@ -43,7 +43,7 @@ export const POST: APIRoute = async (context) => {
   incrementFragmentLoads(session);
 
   // Speichere aktualisierte Session
-  await saveSession(context as any, session);
+  await saveSession(context, session);
 
   // Check if test is complete
   const complete = isTestComplete(session);

@@ -14,7 +14,7 @@ export const GET: APIRoute = async (context) => {
   const locale = (url.searchParams.get("locale") as Locale) || "de";
 
   // Lade Session
-  const session = await loadSession(context as any);
+  const session = await loadSession(context);
 
   if (!session) {
     return new Response("Session not found", { status: 404 });
@@ -28,7 +28,7 @@ export const GET: APIRoute = async (context) => {
 
   // Fragment-Load zählen
   incrementFragmentLoads(session);
-  await saveSession(context as any, session);
+  await saveSession(context, session);
 
   // Render task fragment
   const taskHtml = await renderTaskFragment(currentTask, session.id, locale);
@@ -46,6 +46,7 @@ export const GET: APIRoute = async (context) => {
     headers: {
       "Content-Type": "text/html; charset=utf-8",
       "HX-Trigger": "taskLoaded",
+      "Cache-Control": "no-store, no-cache, must-revalidate",
     },
   });
 };

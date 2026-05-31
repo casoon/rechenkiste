@@ -19,7 +19,7 @@ import {
   taskGenerator,
   taskRegistry,
 } from "@domain/task-system";
-import type { AstroGlobal } from "astro";
+import type { AstroGlobal, APIContext } from "astro";
 
 // Initialisiere Task-System
 initTaskSystem();
@@ -405,12 +405,12 @@ export function createCustomSession(
  * Speichert eine Session in Astro Session
  */
 export async function saveSession(
-  astro: AstroGlobal,
+  astro: AstroGlobal | APIContext,
   session: TestSession,
 ): Promise<void> {
-  const astroSession = await astro.session;
+  const astroSession = astro.session;
   if (astroSession) {
-    await astroSession.set("testSession", session);
+    astroSession.set("testSession", session);
   }
 }
 
@@ -418,9 +418,9 @@ export async function saveSession(
  * Lädt eine Session aus Astro Session
  */
 export async function loadSession(
-  astro: AstroGlobal,
+  astro: AstroGlobal | APIContext,
 ): Promise<TestSession | undefined> {
-  const astroSession = await astro.session;
+  const astroSession = astro.session;
   if (astroSession) {
     return (await astroSession.get("testSession")) as TestSession | undefined;
   }

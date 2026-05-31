@@ -185,6 +185,7 @@ export async function renderFeedbackResponse(
     headers: {
       "Content-Type": "text/html; charset=utf-8",
       "HX-Trigger": "feedbackShown",
+      "Cache-Control": "no-store, no-cache, must-revalidate",
     },
   });
 }
@@ -252,6 +253,7 @@ export async function renderResultResponse(
     headers: {
       "Content-Type": "text/html; charset=utf-8",
       "HX-Trigger": "resultShown",
+      "Cache-Control": "no-store, no-cache, must-revalidate",
     },
   });
 }
