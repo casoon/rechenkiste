@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.6.0",
-    "@casoon/fragment-renderer": "^0.1.1",
+    "@casoon/fragment-renderer": "^0.2.0",
     "@fontsource/comic-neue": "^5.2.7",
     "@tailwindcss/vite": "^4.3.0",
     "alpinejs": "^3.15.12",

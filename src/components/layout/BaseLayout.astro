@@ -113,18 +113,17 @@ const currentPath = Astro.url.pathname.replace(/^\/(en|uk)/, "") || "/";
 
         <ClientRouter />
         <script>
-            import "htmx.org";
+            import htmx from "htmx.org";
             import Alpine from "alpinejs";
 
+            (window as any).htmx = htmx;
             (window as any).Alpine = Alpine;
+            htmx.process(document.body);
             Alpine.start();
 
             // Re-initialize HTMX after View Transitions
             document.addEventListener("astro:page-load", () => {
-                const win = window as any;
-                if (win.htmx) {
-                    win.htmx.process(document.body);
-                }
+                htmx.process(document.body);
             });
         </script>
     </head>

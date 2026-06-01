@@ -8,16 +8,19 @@ import type { Grade } from "@domain/task-system";
 import type { Locale } from "@i18n/translations";
 import { getLocalizedPath } from "@i18n/translations";
 
-export const POST: APIRoute = async (context) => {
-  const { request, redirect } = context;
-  const formData = await request.formData();
+type StartParams = {
+  get(name: string): FormDataEntryValue | string | null;
+};
 
-  const grade = parseInt(formData.get("grade") as string, 10) as Grade;
-  const count = parseInt(formData.get("count") as string, 10);
-  const locale = (formData.get("locale") as Locale) || "de";
+async function startTest(context: Parameters<APIRoute>[0], params: StartParams) {
+  const { redirect } = context;
 
-  const adaptiveDifficulty = formData.get("adaptive") === "on";
-  const retryIncorrect = formData.get("retry") === "on";
+  const grade = parseInt(params.get("grade") as string, 10) as Grade;
+  const count = parseInt(params.get("count") as string, 10);
+  const locale = (params.get("locale") as Locale) || "de";
+
+  const adaptiveDifficulty = params.get("adaptive") === "on";
+  const retryIncorrect = params.get("retry") === "on";
 
   if (isNaN(grade) || grade < 1 || grade > 5) {
     return redirect(getLocalizedPath("/", locale));
@@ -39,4 +42,13 @@ export const POST: APIRoute = async (context) => {
   await saveSession(context, session);
 
   return redirect(getLocalizedPath("/test", locale));
+}
+
+export const GET: APIRoute = async (context) => {
+  return startTest(context, context.url.searchParams);
+};
+
+export const POST: APIRoute = async (context) => {
+  const formData = await context.request.formData();
+  return startTest(context, formData);
 };

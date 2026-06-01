@@ -12,8 +12,8 @@ importers:
         specifier: ^13.6.0
         version: 13.6.0(@types/node@24.10.1)(astro@6.4.2(@types/node@24.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.60.4)(yaml@2.9.0))(jiti@2.7.0)(lightningcss@1.32.0)(workerd@1.20260526.1)(wrangler@4.95.0)(yaml@2.9.0)
       '@casoon/fragment-renderer':
-        specifier: ^0.1.1
-        version: 0.1.1(astro@6.4.2(@types/node@24.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.60.4)(yaml@2.9.0))
+        specifier: ^0.2.0
+        version: 0.2.0(astro@6.4.2(@types/node@24.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.60.4)(yaml@2.9.0))
       '@fontsource/comic-neue':
         specifier: ^5.2.7
         version: 5.2.7
@@ -149,8 +149,8 @@ packages:
       astro:
         optional: true
 
-  '@casoon/fragment-renderer@0.1.1':
-    resolution: {integrity: sha512-B86JSm99uCWg1x5DyvuLIwO1Wl6ZM++ajohQrau1jnSCwrYWjXYvwSW9Haf+NTsaUZSrpk+7tVf2RvXfHmwFwQ==}
+  '@casoon/fragment-renderer@0.2.0':
+    resolution: {integrity: sha512-lw8cINh4M5xwl8EIVYHXF/ih2L0ReE5nct9/z/ocokznAAEZFGjoyv+Os/bX7skJXDT63sfm9zu+oqNlEjZ+aw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       astro: '>=4.0.0'
@@ -2928,7 +2928,7 @@ snapshots:
     optionalDependencies:
       astro: 6.4.2(@types/node@24.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.60.4)(yaml@2.9.0)
 
-  '@casoon/fragment-renderer@0.1.1(astro@6.4.2(@types/node@24.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.60.4)(yaml@2.9.0))':
+  '@casoon/fragment-renderer@0.2.0(astro@6.4.2(@types/node@24.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.60.4)(yaml@2.9.0))':
     dependencies:
       astro: 6.4.2(@types/node@24.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.60.4)(yaml@2.9.0)
 

@@ -10,6 +10,9 @@ const siteUrl = "https://rechenkiste.casoon.workers.dev/";
 export default defineConfig({
   output: "server",
   site: siteUrl,
+  devToolbar: {
+    enabled: false,
+  },
   adapter: cloudflare(),
   vite: {
     plugins: [tailwindcss()],
