@@ -126,36 +126,20 @@ function numpadInput(task: TaskInstance, locale: Locale): string {
 }
 
 function getArithmeticInput(task: TaskInstance, locale: Locale): string {
-  const lowerQuestion = task.question.toLowerCase();
-  const needsTimeInput =
-    task.typeId?.includes("clock") ||
-    task.typeId?.includes("time") ||
-    lowerQuestion.includes("wie spät") ||
-    lowerQuestion.includes("uhrzeit") ||
-    lowerQuestion.includes("what time");
+  // Die Form der erwarteten Antwort bestimmt die Eingabe — nicht typeId oder
+  // Fragetext. "time-span-*" etwa heißt "time", erwartet aber eine blanke Zahl,
+  // und "3/4 als Dezimalzahl" enthält ein "/", will aber keinen Bruch.
+  const expected = String(task.getCorrectAnswer() ?? "");
+  const needsTimeInput = expected.includes(":");
+  const needsFractionInput = !needsTimeInput && expected.includes("/");
 
-  const needsDecimalInput =
-    !needsTimeInput &&
-    (task.typeId?.includes("to-decimal") ||
-      task.typeId?.includes("decimal") ||
-      lowerQuestion.includes("dezimalzahl"));
-
-  const needsFractionInput =
-    !needsDecimalInput &&
-    !needsTimeInput &&
-    (task.question.includes("/") ||
-      task.typeId?.includes("fraction") ||
-      task.typeId === "percent-identify");
-
-  // Ziffernblock nur, wenn eine reine Zahl ohne Vorzeichen erwartet wird —
-  // Uhrzeiten, Brüche, Kommazahlen und negative Werte brauchen die Tastatur.
-  if (!needsTimeInput && !needsDecimalInput && !needsFractionInput) {
-    const expected = String(task.getCorrectAnswer() ?? "");
-    if (/^\d{1,8}$/.test(expected)) {
-      return numpadInput(task, locale);
-    }
+  // Ziffernblock, wenn eine reine Zahl ohne Vorzeichen erwartet wird
+  if (/^\d{1,8}$/.test(expected)) {
+    return numpadInput(task, locale);
   }
 
+  // Uhrzeiten brauchen ":" und Brüche "/" — beide Zeichen fehlen auf den
+  // numerischen Tastaturen von iOS und Android, deshalb dort inputmode="text".
   const pattern = needsTimeInput
     ? "[^0-9:]"
     : needsFractionInput
@@ -172,7 +156,7 @@ function getArithmeticInput(task: TaskInstance, locale: Locale): string {
         class="input-field flex-1"
         placeholder="${escapeAttr(t(locale, "yourAnswer"))}"
         autocomplete="off"
-        inputmode="${needsFractionInput ? "text" : "decimal"}"
+        inputmode="${needsTimeInput || needsFractionInput ? "text" : "decimal"}"
         required
         autofocus
         x-data="{ pattern: ${escapeAttr(JSON.stringify(pattern))} }"
