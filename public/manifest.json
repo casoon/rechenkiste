@@ -4,8 +4,8 @@
   "description": "Interaktive Mathe-Übungen für Grundschulkinder. Rechnen, Geometrie und Textaufgaben für Klasse 1-5.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#faf5ff",
-  "theme_color": "#8B5CF6",
+  "background_color": "#FCFCF8",
+  "theme_color": "#1B3A6B",
   "orientation": "portrait-primary",
   "icons": [
     {
@@ -27,7 +27,10 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["education", "kids"],
+  "categories": [
+    "education",
+    "kids"
+  ],
   "lang": "de",
   "dir": "ltr"
 }

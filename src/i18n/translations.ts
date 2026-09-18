@@ -12,7 +12,7 @@ export const translations = {
     chooseCount: "Wie viele Aufgaben möchtest du lösen?",
     grade: "Klasse",
     tasks: "Aufgaben",
-    startTest: "Test starten",
+    startTest: "Anfangen",
 
     // Klassenstufen
     grade1: "1. Klasse",
@@ -57,8 +57,19 @@ export const translations = {
       "Schwierigkeit anpassen (leichter/schwerer je nach Antworten)",
     retryIncorrect: "Fehler am Ende wiederholen",
     matchItems: "Ordne zu:",
+    matchInstructions: "Wähle ein Element und danach das passende Ziel.",
+    allItemsAssigned: "Alle Elemente sind zugeordnet.",
+    removeAssignment: "Zuordnung entfernen",
     retryRound: "Wiederholungsrunde",
     retryInfo: "Jetzt wiederholst du die {count} falschen Aufgaben.",
+
+    // Aufgabenkategorien
+    catArithmetic: "Rechnen",
+    catWordProblem: "Textaufgaben",
+    catGeometry: "Geometrie",
+    catNumberSense: "Zahlenverständnis",
+    catMeasurement: "Maßeinheiten",
+    catData: "Daten & Diagramme",
 
     // Aufgabentypen
     calculate: "Rechne:",
@@ -73,10 +84,25 @@ export const translations = {
     books: "Bücher",
     marbles: "Murmeln",
 
+    // Seitentexte & Vorlesen
+    keyClear: "löschen",
+    keyBack: "eins zurück",
+    readPage: "Seite vorlesen",
+    readTask: "Aufgabe vorlesen",
+    newPage: "Neue Seite im Rechenheft",
+    newPageSub: "Klasse und Umfang eintragen",
+    back: "Zurück",
+    cancelPractice: "Übung abbrechen",
+    pageDone: "Seite fertig",
+    resultScore: "{correct} von {total} richtig",
+    markRight: "richtig",
+    markPractise: "noch üben",
+    backToPractice: "Zurück zum Rechnen",
+
     // Navigation
     language: "Sprache",
     techInfo: "Technik & AHA-Stack",
-    customTest: "Eigener Test",
+    customTest: "Aufgaben selbst zusammenstellen",
   },
 
   en: {
@@ -90,7 +116,7 @@ export const translations = {
     chooseCount: "How many tasks do you want to solve?",
     grade: "Grade",
     tasks: "Tasks",
-    startTest: "Start Test",
+    startTest: "Start",
 
     // Grade levels
     grade1: "Grade 1",
@@ -134,8 +160,19 @@ export const translations = {
     adaptiveDifficulty: "Adjust difficulty (easier/harder based on answers)",
     retryIncorrect: "Retry incorrect at end",
     matchItems: "Match:",
+    matchInstructions: "Select an item, then select its matching target.",
+    allItemsAssigned: "All items are assigned.",
+    removeAssignment: "Remove assignment",
     retryRound: "Retry round",
     retryInfo: "Now you'll retry the {count} incorrect tasks.",
+
+    // Task categories
+    catArithmetic: "Arithmetic",
+    catWordProblem: "Word Problems",
+    catGeometry: "Geometry",
+    catNumberSense: "Number Sense",
+    catMeasurement: "Measurements",
+    catData: "Data & Charts",
 
     // Task types
     calculate: "Calculate:",
@@ -150,10 +187,25 @@ export const translations = {
     books: "books",
     marbles: "marbles",
 
+    // Seitentexte & Vorlesen
+    keyClear: "clear",
+    keyBack: "one back",
+    readPage: "Read page aloud",
+    readTask: "Read task aloud",
+    newPage: "A new page in the math book",
+    newPageSub: "Pick your grade and how much to do",
+    back: "Back",
+    cancelPractice: "Stop practising",
+    pageDone: "Page finished",
+    resultScore: "{correct} of {total} correct",
+    markRight: "correct",
+    markPractise: "practise again",
+    backToPractice: "Back to practising",
+
     // Navigation
     language: "Language",
     techInfo: "Tech & AHA-Stack",
-    customTest: "Custom Test",
+    customTest: "Build your own set",
   },
 
   uk: {
@@ -167,7 +219,7 @@ export const translations = {
     chooseCount: "Скільки завдань ти хочеш розв'язати?",
     grade: "Клас",
     tasks: "Завдання",
-    startTest: "Почати тест",
+    startTest: "Почати",
 
     // Рівні класів
     grade1: "1 клас",
@@ -212,8 +264,19 @@ export const translations = {
       "Налаштувати складність (легше/важче залежно від відповідей)",
     retryIncorrect: "Повторити помилки в кінці",
     matchItems: "Встанови відповідність:",
+    matchInstructions: "Вибери елемент, а потім відповідну ціль.",
+    allItemsAssigned: "Усі елементи розподілено.",
+    removeAssignment: "Видалити відповідність",
     retryRound: "Раунд повторення",
     retryInfo: "Тепер ти повториш {count} неправильних завдань.",
+
+    // Категорії завдань
+    catArithmetic: "Арифметика",
+    catWordProblem: "Текстові задачі",
+    catGeometry: "Геометрія",
+    catNumberSense: "Числове чуття",
+    catMeasurement: "Вимірювання",
+    catData: "Дані та діаграми",
 
     // Типи завдань
     calculate: "Обчисли:",
@@ -228,10 +291,25 @@ export const translations = {
     books: "книжок",
     marbles: "кульок",
 
-    // Навігація
+    // Seitentexte & Vorlesen
+    keyClear: "очистити",
+    keyBack: "на один назад",
+    readPage: "Прочитати сторінку",
+    readTask: "Прочитати завдання",
+    newPage: "Нова сторінка у зошиті",
+    newPageSub: "Вибери клас і кількість завдань",
+    back: "Назад",
+    cancelPractice: "Перервати вправу",
+    pageDone: "Сторінку завершено",
+    resultScore: "{correct} з {total} правильно",
+    markRight: "правильно",
+    markPractise: "ще потренуватись",
+    backToPractice: "Повернутися до задач",
+
+    // Navigation
     language: "Мова",
     techInfo: "Техніка & AHA-Stack",
-    customTest: "Власний тест",
+    customTest: "Скласти власні завдання",
   },
 } as const;
 
@@ -251,6 +329,20 @@ export function t(
   }
 
   return text;
+}
+
+const categoryKeys = {
+  arithmetic: "catArithmetic",
+  "word-problem": "catWordProblem",
+  geometry: "catGeometry",
+  "number-sense": "catNumberSense",
+  measurement: "catMeasurement",
+  data: "catData",
+} as const satisfies Record<string, TranslationKey>;
+
+export function categoryLabel(locale: Locale, category: string): string {
+  const key = categoryKeys[category as keyof typeof categoryKeys];
+  return key ? t(locale, key) : category;
 }
 
 export function getLocaleFromUrl(url: URL): Locale {

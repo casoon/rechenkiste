@@ -1,198 +1,229 @@
 @import "tailwindcss";
 
+/* Design "Rechenheft": Karopapier, Tinte und Rotstift. */
 @theme {
-    --font-family-sans: "Comic Neue", "Comic Sans MS", cursive, sans-serif;
+    --font-sans: "Lexend", system-ui, sans-serif;
 
-    /* Freundliche Kinderfarben */
-    --color-primary-50: #fef3f2;
-    --color-primary-100: #ffe1e1;
-    --color-primary-200: #ffc9c9;
-    --color-primary-300: #ffa3a3;
-    --color-primary-400: #ff6b6b;
-    --color-primary-500: #f83b3b;
-    --color-primary-600: #e51d1d;
-    --color-primary-700: #c11414;
-    --color-primary-800: #a01414;
-    --color-primary-900: #841818;
+    /* Tinte */
+    --color-ink: #1b3a6b;
+    --color-ink-soft: #2c4c7c;
+    --color-muted: #4a6390;
+    --color-faint: #9fb3d4;
 
-    --color-secondary-50: #f0f9ff;
-    --color-secondary-100: #e0f2fe;
-    --color-secondary-200: #b9e6fe;
-    --color-secondary-300: #7cd4fd;
-    --color-secondary-400: #36bffa;
-    --color-secondary-500: #0ca5ea;
-    --color-secondary-600: #0084c8;
-    --color-secondary-700: #0169a2;
-    --color-secondary-800: #065986;
-    --color-secondary-900: #0b4a6f;
+    /* Rotstift */
+    --color-mark: #c8342b;
+    --color-mark-dark: #ac2b23;
 
-    --color-accent-50: #fefce8;
-    --color-accent-100: #fef9c3;
-    --color-accent-200: #fef08a;
-    --color-accent-300: #fde047;
-    --color-accent-400: #facc15;
-    --color-accent-500: #eab308;
-    --color-accent-600: #ca8a04;
-    --color-accent-700: #a16207;
-    --color-accent-800: #854d0e;
-    --color-accent-900: #713f12;
+    /* Papier & Linien */
+    --color-paper: #fcfcf8;
+    --color-grid: #dee5ef;
+    --color-line: #c9cfd9;
+    --color-rule: #e4e9f1;
+    --color-panel: #f3f5f9;
+    --color-field: #f8fafd;
 
-    --color-success-50: #f0fdf4;
-    --color-success-100: #dcfce7;
-    --color-success-200: #bbf7d0;
-    --color-success-300: #86efac;
-    --color-success-400: #4ade80;
-    --color-success-500: #22c55e;
-    --color-success-600: #16a34a;
-    --color-success-700: #15803d;
-    --color-success-800: #166534;
-    --color-success-900: #14532d;
+    /* Richtig / falsch */
+    --color-ok: #2e7d52;
+    --color-ok-soft: #edf7f1;
+    --color-ok-ink: #1f5a3b;
+    --color-bad-soft: #fdf0ee;
+    --color-bad-ink: #8e241d;
 }
 
 @layer base {
     body {
-        @apply min-h-screen bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100;
+        @apply min-h-screen text-ink;
+        background-color: var(--color-paper);
+        background-image:
+            repeating-linear-gradient(
+                0deg,
+                var(--color-grid) 0 1px,
+                transparent 1px 28px
+            ),
+            repeating-linear-gradient(
+                90deg,
+                var(--color-grid) 0 1px,
+                transparent 1px 28px
+            );
+    }
+
+    :focus-visible {
+        outline: 3px solid var(--color-mark);
+        outline-offset: 2px;
     }
 }
 
 @layer components {
-    .glass-card {
-        @apply bg-white/70 backdrop-blur-md rounded-3xl shadow-xl border border-white/50;
+    /* Blatt im Heft */
+    .paper-card {
+        @apply rounded-[18px] border border-line bg-white shadow-[0_10px_26px_rgba(27,58,107,.08)];
     }
 
-    .glass-card-strong {
-        @apply bg-white/85 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/60;
+    .card-title {
+        @apply text-3xl font-bold leading-tight;
     }
 
+    /* Rote Unterstreichung + Unterzeile */
+    .card-rule {
+        @apply flex items-center gap-3;
+    }
+
+    .card-rule::before {
+        @apply block h-[3px] w-16 bg-mark content-[''];
+    }
+
+    /* Auswahlkachel (Klasse, Anzahl) */
+    .tile {
+        @apply min-h-14 w-full rounded-[10px] border-2 border-line bg-white
+           text-center text-2xl font-semibold text-ink transition-colors;
+    }
+
+    .tile:hover {
+        @apply border-ink;
+    }
+
+    .tile-selected {
+        @apply border-mark bg-mark font-bold text-white;
+    }
+
+    .tile-selected:hover {
+        @apply border-mark;
+    }
+
+    /* Themen-/Klassen-Chip */
+    .chip {
+        @apply min-h-11 rounded-full border-2 border-line bg-white px-4 py-2.5
+           text-[15px] font-semibold text-muted transition-colors;
+    }
+
+    .chip:hover {
+        @apply border-ink text-ink;
+    }
+
+    .chip-selected {
+        @apply border-ink bg-ink text-white;
+    }
+
+    .chip-selected:hover {
+        @apply border-ink text-white;
+    }
+
+    /* Kästchen zum Ankreuzen */
+    .checkbox-box {
+        @apply size-7 shrink-0 rounded-md border-2 border-faint bg-white transition-colors;
+    }
+
+    .peer:checked ~ .checkbox-box,
+    .checkbox-box.is-on {
+        @apply border-ink bg-ink;
+        box-shadow:
+            inset 0 0 0 5px var(--color-paper),
+            inset 0 0 0 12px var(--color-ink);
+    }
+
+    /* Knöpfe */
     .btn-primary {
-        @apply px-8 py-4 text-xl font-bold text-white rounded-full
-           bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500
-           hover:from-pink-600 hover:via-purple-600 hover:to-indigo-600
-           transform hover:scale-105 transition-all duration-200
-           shadow-lg hover:shadow-xl
-           focus:outline-none focus:ring-4 focus:ring-purple-300;
+        @apply min-h-16 rounded-xl bg-mark px-6 py-5 text-[23px] font-bold text-white
+           transition-colors;
+    }
+
+    .btn-primary:hover {
+        @apply bg-mark-dark;
     }
 
     .btn-secondary {
-        @apply px-6 py-3 text-lg font-bold text-purple-700 rounded-full
-           bg-white/80 backdrop-blur-sm border-2 border-purple-300
-           hover:bg-purple-100 hover:border-purple-400
-           transform hover:scale-105 transition-all duration-200
-           shadow-md hover:shadow-lg
-           focus:outline-none focus:ring-4 focus:ring-purple-200;
+        @apply min-h-13 rounded-xl border-2 border-line px-5 py-3.5 text-base
+           font-semibold text-ink transition-colors;
     }
 
-    .btn-success {
-        @apply px-8 py-4 text-xl font-bold text-white rounded-full
-           bg-gradient-to-r from-green-400 to-emerald-500
-           hover:from-green-500 hover:to-emerald-600
-           transform hover:scale-105 transition-all duration-200
-           shadow-lg hover:shadow-xl
-           focus:outline-none focus:ring-4 focus:ring-green-300;
+    .btn-secondary:hover {
+        @apply border-ink;
     }
 
+    .btn-check {
+        @apply min-h-15 w-full rounded-xl bg-ink px-6 py-4 text-xl font-bold text-white
+           transition-colors;
+    }
+
+    .btn-check:hover {
+        @apply bg-ink-soft;
+    }
+
+    .btn-quiet {
+        @apply min-h-10 rounded-full border border-line bg-white px-3.5 py-2 text-sm
+           font-semibold text-ink transition-colors;
+    }
+
+    .btn-quiet:hover {
+        @apply border-ink;
+    }
+
+    .link-mark {
+        @apply min-h-8 border-b-2 border-mark text-[15px] font-semibold text-ink;
+    }
+
+    /* Eingabefeld für Antworten */
     .input-field {
-        @apply w-full px-6 py-4 text-2xl text-center font-bold
-           bg-white/90 backdrop-blur-sm rounded-2xl
-           border-2 border-purple-300
-           focus:border-purple-500 focus:ring-4 focus:ring-purple-200
-           transition-all duration-200
-           placeholder:text-gray-400;
+        @apply min-h-17 w-full rounded-xl border-2 border-ink bg-field px-4 py-3
+           text-[32px] font-bold text-ink;
+        @apply placeholder:text-[20px] placeholder:font-normal placeholder:text-faint;
     }
 
-    .select-field {
-        @apply w-full px-6 py-4 text-xl font-bold
-           bg-white/90 backdrop-blur-sm rounded-2xl
-           border-2 border-purple-300
-           focus:border-purple-500 focus:ring-4 focus:ring-purple-200
-           transition-all duration-200
-           cursor-pointer appearance-none
-           bg-no-repeat bg-right pr-12;
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-        background-position: right 1rem center;
-        background-size: 1.5em 1.5em;
+    /* Ziffernblock */
+    .key {
+        @apply min-h-15 w-full rounded-xl border-2 border-line bg-white
+           text-[26px] font-semibold text-ink transition-colors;
     }
 
-    .task-container {
-        @apply p-8 text-center;
+    .key-alt {
+        @apply min-h-15 w-full rounded-xl border-2 border-line bg-panel px-2
+           text-[15px] font-semibold text-muted transition-colors;
     }
 
-    .task-question {
-        @apply text-3xl font-bold text-gray-800 mb-8;
+    .key:hover,
+    .key-alt:hover {
+        @apply border-ink;
     }
 
+    /* Fortschritt */
     .progress-bar {
-        @apply w-full h-4 bg-gray-200 rounded-full overflow-hidden;
+        @apply h-2.5 w-full overflow-hidden rounded-full bg-rule;
     }
 
     .progress-fill {
-        @apply h-full bg-gradient-to-r from-green-400 to-emerald-500
-           transition-all duration-500 ease-out rounded-full;
+        @apply h-full rounded-full bg-mark transition-[width] duration-300 ease-out;
     }
 
+    .progress-dot {
+        @apply block size-2.5 rounded-full bg-grid;
+    }
+
+    /* Rückmeldung */
     .feedback-correct {
-        @apply bg-gradient-to-r from-green-100 to-emerald-100
-           border-2 border-green-400 rounded-2xl p-4
-           text-green-700 font-bold text-xl;
+        @apply rounded-[14px] border-2 border-ok bg-ok-soft p-5 text-ok-ink;
     }
 
     .feedback-incorrect {
-        @apply bg-gradient-to-r from-red-100 to-pink-100
-           border-2 border-red-400 rounded-2xl p-4
-           text-red-700 font-bold text-xl;
+        @apply rounded-[14px] border-2 border-mark bg-bad-soft p-5 text-bad-ink;
     }
 
-    .star {
-        @apply inline-block text-4xl;
-        animation: star-pop 0.3s ease-out;
-    }
-
-    .language-switcher {
-        @apply flex gap-2;
+    /* Codeblock auf der Technik-Seite */
+    .code-block {
+        @apply overflow-x-auto rounded-xl bg-[#11233e] p-[18px] text-[13.5px]
+           leading-relaxed text-[#e7eef8];
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     }
 
     .language-btn {
-        @apply px-3 py-1.5 text-sm font-bold rounded-full
-           bg-white/60 backdrop-blur-sm
-           hover:bg-white/80 transition-all duration-200
-           border border-white/50;
+        @apply text-sm text-faint transition-colors;
+    }
+
+    .language-btn:hover {
+        @apply text-paper;
     }
 
     .language-btn.active {
-        @apply bg-purple-500 text-white border-purple-600;
-    }
-}
-
-@keyframes star-pop {
-    0% {
-        transform: scale(0);
-    }
-    50% {
-        transform: scale(1.3);
-    }
-    100% {
-        transform: scale(1);
-    }
-}
-
-.bounce-in {
-    animation: bounce-in 0.5s ease-out;
-}
-
-@keyframes bounce-in {
-    0% {
-        transform: scale(0.3);
-        opacity: 0;
-    }
-    50% {
-        transform: scale(1.05);
-    }
-    70% {
-        transform: scale(0.9);
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
+        @apply border-b-2 border-paper pb-0.5 font-semibold text-paper;
     }
 }
 
@@ -202,11 +233,17 @@
 
 @keyframes slide-up {
     0% {
-        transform: translateY(20px);
+        transform: translateY(12px);
         opacity: 0;
     }
     100% {
         transform: translateY(0);
         opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .slide-up {
+        animation: none;
     }
 }

@@ -1,23 +1,40 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
-import { t, getLocaleFromUrl } from "@i18n/translations";
+import {
+    t,
+    categoryLabel,
+    getLocaleFromUrl,
+    getLocalizedPath,
+} from "@i18n/translations";
 import type { Locale } from "@i18n/translations";
-import { loadSession, getCurrentTask } from "@domain/session";
+import {
+    loadSession,
+    getCurrentTask,
+    getActiveTaskCount,
+} from "@domain/session";
 import { renderTaskFragment } from "@services/task-renderer";
 
 const locale: Locale = getLocaleFromUrl(Astro.url);
 
 const session = await loadSession(Astro);
 if (!session) {
-    return Astro.redirect("/");
+    return Astro.redirect(getLocalizedPath("/", locale));
 }
 
 const currentTask = getCurrentTask(session);
 if (!currentTask) {
-    return Astro.redirect("/ergebnis");
+    return Astro.redirect(getLocalizedPath("/ergebnis", locale));
 }
 
-const progress = Math.round((session.currentIndex / session.totalTasks) * 100);
+const activeTaskCount = getActiveTaskCount(session);
+const progress = Math.round((session.currentIndex / activeTaskCount) * 100);
+
+// Punkte: beantwortet (richtig/falsch), aktuell, noch offen
+const dots = Array.from({ length: activeTaskCount }, (_, index) => {
+    const result = session.results[index];
+    if (result) return result.isCorrect ? "ok" : "bad";
+    return index === session.currentIndex ? "current" : "open";
+});
 
 const taskHtml = await renderTaskFragment(currentTask, session.id, locale);
 ---
@@ -25,85 +42,144 @@ const taskHtml = await renderTaskFragment(currentTask, session.id, locale);
 <BaseLayout
     title={t(locale, "taskOf", {
         current: session.currentIndex + 1,
-        total: session.totalTasks,
+        total: activeTaskCount,
     })}
     locale={locale}
 >
     <div
-        class="glass-card-strong p-6 md:p-10 max-w-2xl w-full"
+        id="speak-page"
+        class="flex w-full max-w-[620px] flex-col gap-5"
         transition:name="main-card"
     >
-        <div class="mb-6" transition:name="progress">
-            <div class="flex justify-between items-center mb-2" id="progress-header" data-template={t(locale, "taskOf", { current: "{current}", total: "{total}" })}>
-                <span class="text-lg font-bold text-purple-700">
-                    {
-                        t(locale, "taskOf", {
-                            current: session.currentIndex + 1,
-                            total: session.totalTasks,
-                        })
-                    }
-                </span>
-                <span class="text-lg font-bold text-purple-700">
-                    {progress}%
-                </span>
-            </div>
-            <div class="progress-bar">
-                <div
-                    class="progress-fill"
-                    style={`width: ${progress}%`}
-                    transition:animate="none"
-                >
+        <div class="paper-card flex flex-col gap-6 px-7 pt-6 pb-7">
+            <div class="flex flex-col gap-2.5" transition:name="progress">
+                <div class="flex items-baseline justify-between gap-3">
+                    <span
+                        id="progress-label"
+                        class="text-[15px] font-semibold text-muted"
+                        data-template={t(locale, "taskOf", {
+                            current: "{current}",
+                            total: "{total}",
+                        })}
+                    >
+                        {
+                            t(locale, "taskOf", {
+                                current: session.currentIndex + 1,
+                                total: activeTaskCount,
+                            })
+                        }
+                    </span>
+                    <div
+                        id="progress-dots"
+                        class="flex flex-wrap justify-end gap-1.5"
+                        aria-hidden="true"
+                    >
+                        {
+                            dots.map((state) => (
+                                <span
+                                    class:list={[
+                                        "progress-dot",
+                                        {
+                                            "bg-ok": state === "ok",
+                                            "bg-mark": state === "bad",
+                                            "bg-ink": state === "current",
+                                        },
+                                    ]}
+                                />
+                            ))
+                        }
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div
+                        id="progress-fill"
+                        class="progress-fill"
+                        style={`width: ${progress}%`}
+                        transition:animate="none"
+                    >
+                    </div>
                 </div>
             </div>
+
+            <div class="flex flex-wrap items-start justify-between gap-3.5">
+                <span
+                    class="text-[13px] font-semibold tracking-[.08em] text-muted uppercase"
+                >
+                    {categoryLabel(locale, currentTask.category)}
+                </span>
+                <button
+                    type="button"
+                    data-speak="#speak-task"
+                    hidden
+                    class="btn-quiet"
+                >
+                    {t(locale, "readTask")}
+                </button>
+            </div>
+
+            <div id="task-container" set:html={taskHtml} />
         </div>
 
-        <div
-            id="task-container"
-            class="task-container"
-            transition:name="task"
-            set:html={taskHtml}
-        />
+        <a
+            href={getLocalizedPath("/", locale)}
+            class="min-h-10 self-center text-[15px] text-muted hover:text-mark"
+        >
+            {t(locale, "cancelPractice")}
+        </a>
     </div>
 </BaseLayout>
 
 <script>
     function updateProgress(current: number, total: number, percent: number) {
-        const header = document.getElementById("progress-header");
-        const template = header?.dataset.template || "Aufgabe {current} von {total}";
-        const labels = document.querySelectorAll(
-            ".text-lg.font-bold.text-purple-700",
-        );
-        if (labels.length >= 2) {
-            labels[0].textContent = template.replace("{current}", String(current)).replace("{total}", String(total));
-            labels[1].textContent = `${percent}%`;
+        const label = document.getElementById("progress-label");
+        if (label) {
+            const template =
+                label.dataset.template || "Aufgabe {current} von {total}";
+            label.textContent = template
+                .replace("{current}", String(current))
+                .replace("{total}", String(total));
         }
-        const progressFill = document.querySelector(
-            ".progress-fill",
-        ) as HTMLElement;
-        if (progressFill) {
-            progressFill.style.width = `${percent}%`;
+
+        const fill = document.getElementById("progress-fill");
+        if (fill) {
+            (fill as HTMLElement).style.width = `${percent}%`;
         }
+
+        const dots = document.getElementById("progress-dots")?.children;
+        if (dots && dots[current - 1]) {
+            dots[current - 1].classList.add("bg-ink");
+        }
+    }
+
+    function markCurrentDot(isCorrect: boolean) {
+        const dots = document.getElementById("progress-dots");
+        const current = dots?.querySelector(".bg-ink");
+        if (!current) return;
+        current.classList.remove("bg-ink");
+        current.classList.add(isCorrect ? "bg-ok" : "bg-mark");
     }
 
     document.addEventListener("htmx:afterSwap", (event) => {
         const target = (event as CustomEvent).detail.target;
 
-        // Feedback-Container: Formular ausblenden
+        // Feedback eingetroffen: Formular ausblenden, Punkt einfärben
         if (target.id === "feedback-container" && target.innerHTML.trim()) {
             const form = document.getElementById("answer-form");
             if (form) {
                 form.style.display = "none";
             }
+            markCurrentDot(!!target.querySelector("#feedback-correct"));
         }
 
-        // Task-Container: Progress aktualisieren
+        // Nächste Aufgabe geladen: Fortschritt aktualisieren
         if (target.id === "task-container") {
             const wrapper = document.getElementById("task-wrapper");
             if (wrapper) {
-                const current = parseInt(wrapper.dataset.current || "1");
-                const total = parseInt(wrapper.dataset.total || "10");
-                const percent = parseInt(wrapper.dataset.percent || "0");
-                updateProgress(current, total, percent);
+                updateProgress(
+                    parseInt(wrapper.dataset.current || "1"),
+                    parseInt(wrapper.dataset.total || "10"),
+                    parseInt(wrapper.dataset.percent || "0"),
+                );
             }
         }
     });

@@ -3,6 +3,7 @@ import {
   loadSession,
   saveSession,
   getCurrentTask,
+  getActiveTaskCount,
   incrementFragmentLoads,
 } from "@domain/session";
 import type { Locale } from "@i18n/translations";
@@ -35,7 +36,7 @@ export const GET: APIRoute = async (context) => {
 
   // Progress berechnen
   const current = session.currentIndex + 1;
-  const total = session.totalTasks;
+  const total = getActiveTaskCount(session);
   const percent = Math.round((session.currentIndex / total) * 100);
 
   // Wrapper mit Progress-Daten hinzufügen

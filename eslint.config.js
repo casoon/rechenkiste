@@ -1,5 +1,5 @@
 import betterTailwindcss from "eslint-plugin-better-tailwindcss";
-import astroParser from "astro-eslint-parser";
+import * as astroParser from "astro-eslint-parser";
 import tsParser from "@typescript-eslint/parser";
 
 const tailwindRules = {

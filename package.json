@@ -8,35 +8,51 @@
     "pnpm": "9.14.2"
   },
   "scripts": {
+    "info": "npm-scripts-info",
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
+    "test": "vitest run",
     "lint": "eslint 'src/**/*.{astro,ts,js}'",
     "lint:fix": "eslint 'src/**/*.{astro,ts,js}' --fix",
     "cf-deploy": "astro build && wrangler deploy",
     "astro": "astro"
   },
+  "scripts-info": {
+    "info": "Zeigt diese Übersicht der verfügbaren Scripts",
+    "dev": "Startet den Astro-Dev-Server",
+    "build": "Baut die Seite für Produktion",
+    "preview": "Startet eine lokale Vorschau des Production-Builds",
+    "check": "Prüft Typen und Astro-Komponenten (astro check)",
+    "test": "Führt die Vitest-Tests aus",
+    "lint": "Prüft den Code mit ESLint",
+    "lint:fix": "Behebt ESLint-Findings automatisch",
+    "cf-deploy": "Baut die Seite und deployt sie auf Cloudflare (wrangler deploy)",
+    "astro": "Führt die Astro-CLI direkt aus"
+  },
   "dependencies": {
-    "@astrojs/cloudflare": "^13.6.0",
+    "@astrojs/cloudflare": "^14.3.2",
     "@casoon/fragment-renderer": "^0.2.0",
-    "@fontsource/comic-neue": "^5.2.7",
-    "@tailwindcss/vite": "^4.3.0",
-    "alpinejs": "^3.15.12",
-    "astro": "^6.4.2",
+    "@fontsource/lexend": "^5.3.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "alpinejs": "^3.17.3",
+    "astro": "^7.3.3",
     "htmx.org": "^2.0.10",
-    "tailwindcss": "^4.3.0"
+    "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.9",
-    "@casoon/astro-site-files": "^0.4.0",
+    "@astrojs/check": "^0.9.10",
+    "@casoon/astro-site-files": "^0.5.0",
     "@eslint/js": "^10.0.1",
     "@types/alpinejs": "^3.13.11",
-    "@typescript-eslint/parser": "^8.60.0",
-    "astro-eslint-parser": "^1.4.0",
-    "eslint": "^10.4.1",
-    "eslint-plugin-better-tailwindcss": "^4.5.0",
+    "@typescript-eslint/parser": "^8.70.0",
+    "astro-eslint-parser": "^3.1.0",
+    "eslint": "^10.10.0",
+    "eslint-plugin-better-tailwindcss": "^4.7.0",
+    "npm-scripts-info": "^0.3.9",
     "typescript": "^6.0.3",
-    "wrangler": "^4.95.0"
+    "vitest": "^5.0.1",
+    "wrangler": "^4.134.0"
   }
 }

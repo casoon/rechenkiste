@@ -18,6 +18,7 @@ type ResultData = {
   total: number;
   percent: number;
   results: Array<{
+    taskId: string;
     isCorrect: boolean;
     userAnswer: string | number;
     correctAnswer: string | number;
@@ -60,11 +61,68 @@ function answerFormHiddenFields(
 
 function taskInputLabel(task: TaskInstance): string {
   if (!task.inputLabel) return "";
-  return `<span class="text-2xl font-semibold text-gray-700">${escapeHtml(task.inputLabel)}</span>`;
+  return `<span class="text-xl font-semibold text-muted">${escapeHtml(task.inputLabel)}</span>`;
+}
+
+function questionBlock(main: string, prompt = ""): string {
+  const promptHtml = prompt
+    ? `<span class="text-base leading-relaxed text-muted">${escapeHtml(prompt)}</span>`
+    : "";
+  return `<div id="speak-task" class="flex flex-col gap-3 slide-up">
+    ${promptHtml}
+    ${main}
+  </div>`;
+}
+
+function checkButton(locale: Locale): string {
+  return `<button type="submit" class="btn-check">${escapeHtml(t(locale, "checkAnswer"))}</button>`;
+}
+
+function answerForm(inner: string, extraClass = ""): string {
+  return `<form id="answer-form" hx-post="/api/test/answer" hx-target="#feedback-container" hx-swap="innerHTML" hx-disabled-elt="find button[type='submit']" class="mt-6 flex flex-col gap-5 ${extraClass}">${inner}</form>`;
 }
 
 function renderFeedbackContainer(): string {
-  return `<div id="feedback-container" class="mt-6"></div>`;
+  return `<div id="feedback-container" class="mt-6 empty:mt-0"></div>`;
+}
+
+function numpadInput(task: TaskInstance, locale: Locale): string {
+  const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    .map(
+      (digit) =>
+        `<button type="button" class="key" x-on:click="push('${digit}')">${digit}</button>`,
+    )
+    .join("");
+
+  return `<div x-data="{
+      v: '',
+      push(d) { if (this.v.length < 8) this.v += d; },
+      clear() { this.v = ''; },
+      back() { this.v = this.v.slice(0, -1); }
+    }" class="flex flex-col gap-3.5">
+    <label for="answer" class="sr-only">${escapeHtml(t(locale, "yourAnswer"))}</label>
+    <div class="flex min-h-17 items-center gap-3 rounded-xl border-2 border-ink bg-field px-4.5 py-3">
+      <input
+        type="text"
+        id="answer"
+        name="answer"
+        x-model="v"
+        class="min-w-0 flex-1 border-0 bg-transparent text-[32px] font-bold text-ink outline-none placeholder:text-[20px] placeholder:font-normal placeholder:text-faint"
+        placeholder="${escapeAttr(t(locale, "yourAnswer"))}"
+        autocomplete="off"
+        inputmode="none"
+        required
+        autofocus
+      />
+      ${taskInputLabel(task)}
+    </div>
+    <div class="grid grid-cols-3 gap-2">
+      ${digits}
+      <button type="button" class="key-alt" x-on:click="clear()">${escapeHtml(t(locale, "keyClear"))}</button>
+      <button type="button" class="key" x-on:click="push('0')">0</button>
+      <button type="button" class="key-alt" x-on:click="back()">${escapeHtml(t(locale, "keyBack"))}</button>
+    </div>
+  </div>`;
 }
 
 function getArithmeticInput(task: TaskInstance, locale: Locale): string {
@@ -88,6 +146,15 @@ function getArithmeticInput(task: TaskInstance, locale: Locale): string {
     (task.question.includes("/") ||
       task.typeId?.includes("fraction") ||
       task.typeId === "percent-identify");
+
+  // Ziffernblock nur, wenn eine reine Zahl ohne Vorzeichen erwartet wird —
+  // Uhrzeiten, Brüche, Kommazahlen und negative Werte brauchen die Tastatur.
+  if (!needsTimeInput && !needsDecimalInput && !needsFractionInput) {
+    const expected = String(task.getCorrectAnswer() ?? "");
+    if (/^\d{1,8}$/.test(expected)) {
+      return numpadInput(task, locale);
+    }
+  }
 
   const pattern = needsTimeInput
     ? "[^0-9:]"
@@ -132,19 +199,17 @@ function renderArithmeticTask(
 ): string {
   const { svg, text } = splitSvgQuestion(task.question);
   const question = svg
-    ? `<div class="bg-white/80 rounded-xl p-4 mb-4">${svg}</div>
-      <p class="text-xl md:text-2xl whitespace-pre-line">${escapeHtml(text)}</p>`
-    : `<span class="text-4xl md:text-5xl font-bold whitespace-pre-line">${escapeHtml(task.question)}</span>`;
+    ? `<div class="rounded-xl border border-line bg-field p-4">${svg}</div>
+      <span class="text-2xl leading-snug font-semibold whitespace-pre-line">${escapeHtml(text)}</span>`
+    : `<span class="text-[40px] leading-[1.15] font-bold tracking-[-.01em] whitespace-pre-line">${escapeHtml(task.question)}</span>`;
 
-  return `<div class="slide-up">
-    <div class="task-question">${question}</div>
-  </div>
+  return `${questionBlock(question)}
 
-  <form id="answer-form" hx-post="/api/test/answer" hx-target="#feedback-container" hx-swap="innerHTML" class="mt-8 space-y-6">
+  ${answerForm(`
     ${answerFormHiddenFields(task, sessionId, locale)}
     ${getArithmeticInput(task, locale)}
-    <button type="submit" class="btn-success w-full">${escapeHtml(t(locale, "checkAnswer"))}</button>
-  </form>
+    ${checkButton(locale)}
+  `)}
 
   ${renderFeedbackContainer()}`;
 }
@@ -155,22 +220,18 @@ function renderWordTask(
   locale: Locale,
 ): string {
   const data = task.data as { story?: string } | undefined;
-  return `<div class="slide-up">
-    <div class="task-question">
-      <div class="bg-white/60 rounded-xl p-6 mb-4 text-left">
-        <p class="text-xl md:text-2xl leading-relaxed">${escapeHtml(data?.story ?? task.question)}</p>
-      </div>
-    </div>
-  </div>
+  const story = `<p class="rounded-xl border border-line bg-field p-5 text-xl leading-relaxed">${escapeHtml(data?.story ?? task.question)}</p>`;
 
-  <form id="answer-form" hx-post="/api/test/answer" hx-target="#feedback-container" hx-swap="innerHTML" class="mt-6 space-y-6">
+  return `${questionBlock(story, t(locale, "wordProblem"))}
+
+  ${answerForm(`
     ${answerFormHiddenFields(task, sessionId, locale)}
     <div>
       <label for="answer" class="sr-only">${escapeHtml(t(locale, "yourAnswer"))}</label>
       <input type="text" id="answer" name="answer" class="input-field" placeholder="${escapeAttr(t(locale, "yourAnswer"))}" autocomplete="off" inputmode="numeric" required autofocus />
     </div>
-    <button type="submit" class="btn-success w-full">${escapeHtml(t(locale, "checkAnswer"))}</button>
-  </form>
+    ${checkButton(locale)}
+  `)}
 
   ${renderFeedbackContainer()}`;
 }
@@ -181,18 +242,16 @@ function renderGeometryTask(
   locale: Locale,
 ): string {
   const data = task.data as { svgMarkup?: string; prompt?: string } | undefined;
-  return `<div class="slide-up">
-    <div class="task-question">
-      <div class="bg-white/80 rounded-xl p-4 mb-4">${data?.svgMarkup ?? ""}</div>
-      <p class="text-xl md:text-2xl">${escapeHtml(data?.prompt ?? task.question)}</p>
-    </div>
-  </div>
+  const figure = `<div class="rounded-xl border border-line bg-field p-4">${data?.svgMarkup ?? ""}</div>
+    <span class="text-2xl leading-snug font-semibold">${escapeHtml(data?.prompt ?? task.question)}</span>`;
 
-  <form id="answer-form" hx-post="/api/test/answer" hx-target="#feedback-container" hx-swap="innerHTML" class="mt-6 space-y-6">
+  return `${questionBlock(figure)}
+
+  ${answerForm(`
     ${answerFormHiddenFields(task, sessionId, locale)}
     ${getArithmeticInput(task, locale)}
-    <button type="submit" class="btn-success w-full">${escapeHtml(t(locale, "checkAnswer"))}</button>
-  </form>
+    ${checkButton(locale)}
+  `)}
 
   ${renderFeedbackContainer()}`;
 }
@@ -203,38 +262,32 @@ function renderMultipleChoiceTask(
   locale: Locale,
 ): string {
   const choices = task.choices ?? [];
+  // Drei Antworten (z. B. < > =) passen in eine Reihe, sonst zwei Spalten
+  const choiceColumns = choices.length === 3 ? "grid-cols-3" : "grid-cols-2";
   const buttons = choices
     .map(
       (choice: ChoiceOption) => `<button
         type="button"
-        class="choice-button p-4 text-2xl font-bold rounded-xl border-2 transition-all duration-200"
-        :class="selected === '${escapeAttr(choice.id)}' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'"
+        class="choice-button min-h-[82px] w-full rounded-[14px] border-2 px-2 py-5 text-[30px] font-bold transition-colors"
+        :class="selected === '${escapeAttr(choice.id)}' ? 'border-ink bg-ink text-white' : 'border-line bg-white text-ink hover:border-ink'"
+        :aria-pressed="selected === '${escapeAttr(choice.id)}'"
         @click="selected = '${escapeAttr(choice.id)}'"
       >${escapeHtml(choice.label)}</button>`,
     )
     .join("");
 
-  return `<div class="slide-up">
-    <div class="task-question">
-      <span class="text-3xl md:text-4xl font-bold">${withLineBreaks(task.question)}</span>
-    </div>
-  </div>
+  return `${questionBlock(
+    `<span class="text-[40px] leading-[1.15] font-bold tracking-[-.01em]">${withLineBreaks(task.question)}</span>`,
+  )}
 
-  <form id="answer-form" hx-post="/api/test/answer" hx-target="#feedback-container" hx-swap="innerHTML" class="mt-8 space-y-4" x-data="{ selected: '' }">
+  <form id="answer-form" hx-post="/api/test/answer" hx-target="#feedback-container" hx-swap="innerHTML" hx-disabled-elt="find button[type='submit']" class="mt-6 flex flex-col gap-5" x-data="{ selected: '' }">
     ${answerFormHiddenFields(task, sessionId, locale)}
     <input type="hidden" name="answer" x-model="selected" />
-    <div class="grid grid-cols-2 gap-3">${buttons}</div>
-    <button type="submit" class="btn-success w-full mt-6" :disabled="!selected" :class="!selected && 'opacity-50 cursor-not-allowed'">${escapeHtml(t(locale, "checkAnswer"))}</button>
+    <div class="grid ${choiceColumns} gap-3">${buttons}</div>
+    <button type="submit" class="btn-check" :disabled="!selected" :class="!selected && 'opacity-50 cursor-not-allowed'">${escapeHtml(t(locale, "checkAnswer"))}</button>
   </form>
 
-  ${renderFeedbackContainer()}
-
-  <style>
-    .choice-button:focus {
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
-    }
-  </style>`;
+  ${renderFeedbackContainer()}`;
 }
 
 function renderDragDropTask(
@@ -277,55 +330,63 @@ function renderDragDropTask(
     isComplete() { return Object.keys(this.assignments).length === this.items.length; }
   }`;
 
-  return `<div class="slide-up">
-    <div class="task-question">
-      <span class="text-gray-500 text-xl block mb-2">${escapeHtml(t(locale, "matchItems"))}</span>
-      <span class="text-2xl md:text-3xl font-bold">${withLineBreaks(task.question)}</span>
-    </div>
-  </div>
+  return `${questionBlock(
+    `<span class="text-[32px] leading-tight font-bold">${withLineBreaks(task.question)}</span>
+     <span class="text-base leading-relaxed text-muted">${escapeHtml(t(locale, "matchInstructions"))}</span>`,
+    t(locale, "matchItems"),
+  )}
 
-  <div id="drag-drop-container" class="mt-8" x-data="${escapeAttr(xData)}">
-    <div class="flex flex-wrap gap-3 mb-6 p-4 bg-gray-100 rounded-xl min-h-15">
+  <div id="drag-drop-container" class="mt-6 flex flex-col gap-4.5" x-data="${escapeAttr(xData)}">
+    <div class="flex min-h-16 flex-wrap items-center gap-2.5">
       <template x-for="item in items" :key="item.id">
-        <div
+        <button
+          type="button"
           x-show="!isItemAssigned(item.id)"
-          class="drag-item px-4 py-2 bg-white rounded-lg border-2 border-gray-300 cursor-grab text-xl font-semibold shadow-sm hover:shadow-md transition-shadow"
-          :class="dragging === item.id && 'opacity-50 border-emerald-500'"
+          class="drag-item min-h-15 cursor-grab rounded-xl border-2 border-ink bg-white px-5.5 py-3.5 text-2xl font-bold text-ink"
+          :class="dragging === item.id && 'bg-field opacity-60'"
+          :aria-pressed="dragging === item.id"
           draggable="true"
           @dragstart="startDrag(item.id)"
           @dragend="endDrag()"
           @touchstart="startDrag(item.id)"
           @click="startDrag(item.id)"
           x-text="item.content"
-        ></div>
+        ></button>
       </template>
-      <div x-show="items.every(i => isItemAssigned(i.id))" class="text-gray-400 italic">Alle Elemente zugeordnet</div>
+      <div x-show="items.every(i => isItemAssigned(i.id))" class="text-muted">${escapeHtml(t(locale, "allItemsAssigned"))}</div>
     </div>
 
-    <div class="grid grid-cols-2 gap-4">
+    <div class="flex items-center gap-2.5">
+      <span class="block h-0.5 flex-1 bg-grid"></span>
+      <span class="text-sm text-muted">${escapeHtml(t(locale, "matchInstructions"))}</span>
+      <span class="block h-0.5 flex-1 bg-grid"></span>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
       <template x-for="target in targets" :key="target.id">
-        <div
-          class="drop-target p-4 rounded-xl border-2 border-dashed min-h-20 flex flex-col items-center justify-center transition-colors"
-          :class="dragging ? 'border-emerald-400 bg-emerald-50' : 'border-gray-300 bg-gray-50'"
+        <button
+          type="button"
+          class="drop-target flex min-h-20 flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-4 transition-colors"
+          :class="getItemInTarget(target.id) ? 'border-ink bg-white' : 'border-faint bg-field'"
           @dragover.prevent
           @drop="dropOnTarget(target.id)"
-          @click="dragging && dropOnTarget(target.id)"
+          @click="dragging ? dropOnTarget(target.id) : getItemInTarget(target.id) && removeFromTarget(target.id)"
         >
-          <span class="text-sm text-gray-500 mb-2" x-text="target.label"></span>
+          <span class="text-sm text-muted" x-text="target.label"></span>
           <template x-if="getItemInTarget(target.id)">
-            <div class="px-4 py-2 bg-emerald-100 rounded-lg border-2 border-emerald-400 text-xl font-semibold cursor-pointer hover:bg-red-100 hover:border-red-400 transition-colors" @click.stop="removeFromTarget(target.id)" x-text="getItemInTarget(target.id)?.content" title="Klicken zum Entfernen"></div>
+            <span class="text-2xl font-bold text-ink" x-text="getItemInTarget(target.id)?.content" title="${escapeAttr(t(locale, "removeAssignment"))}"></span>
           </template>
           <template x-if="!getItemInTarget(target.id)">
-            <span class="text-gray-400">-</span>
+            <span class="text-2xl text-faint">-</span>
           </template>
-        </div>
+        </button>
       </template>
     </div>
 
-    <form id="answer-form" hx-post="/api/test/answer" hx-target="#feedback-container" hx-swap="innerHTML" class="mt-6">
+    <form id="answer-form" hx-post="/api/test/answer" hx-target="#feedback-container" hx-swap="innerHTML" hx-disabled-elt="find button[type='submit']">
       ${answerFormHiddenFields(task, sessionId, locale)}
       <input type="hidden" name="answer" :value="getAnswer()" />
-      <button type="submit" class="btn-success w-full" :disabled="!isComplete()" :class="!isComplete() && 'opacity-50 cursor-not-allowed'">${escapeHtml(t(locale, "checkAnswer"))}</button>
+      <button type="submit" class="btn-check" :disabled="!isComplete()" :class="!isComplete() && 'opacity-50 cursor-not-allowed'">${escapeHtml(t(locale, "checkAnswer"))}</button>
     </form>
   </div>
 
@@ -339,10 +400,6 @@ function renderDragDropTask(
 
     .drag-item:active {
       cursor: grabbing;
-    }
-
-    .drop-target {
-      transition: all 0.2s ease;
     }
   </style>`;
 }
@@ -378,6 +435,10 @@ export async function renderTaskFragment(
   return renderArithmeticTask(task, sessionId, locale);
 }
 
+// Wartezeit nach einer richtigen Antwort: lang genug, um das grüne
+// "Richtig!" wahrzunehmen, kurz genug, dass ein Durchlauf nicht zäh wird.
+const CORRECT_FEEDBACK_DELAY_MS = 600;
+
 export async function renderFeedbackFragment(
   result: ValidationResult,
   nextUrl: string,
@@ -385,19 +446,17 @@ export async function renderFeedbackFragment(
   locale: Locale,
 ): Promise<string> {
   if (result.isCorrect) {
-    return `<div class="feedback-correct bounce-in" id="feedback-correct" data-next-url="${escapeAttr(nextUrl)}" data-delay="1500" data-is-complete="${isComplete ? "true" : "false"}" data-locale="${escapeAttr(locale)}">
-      <div class="text-4xl mb-2">🎉</div>
-      <p>${escapeHtml(t(locale, "correct"))}</p>
-      <div class="mt-4 flex items-center justify-center gap-2 text-green-600">
-        <span class="loading-dots"><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></span>
+    return `<div class="feedback-correct flex flex-col gap-3 slide-up" id="feedback-correct" data-next-url="${escapeAttr(nextUrl)}" data-delay="${CORRECT_FEEDBACK_DELAY_MS}" data-is-complete="${isComplete ? "true" : "false"}" data-locale="${escapeAttr(locale)}">
+      <div class="flex items-center gap-3">
+        <span class="block size-6.5 shrink-0 rounded-full bg-ok"></span>
+        <span class="text-[22px] font-bold">${escapeHtml(t(locale, "correct"))}</span>
       </div>
+      <span class="loading-dots text-2xl font-bold" aria-hidden="true"><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></span>
     </div>
 
     <style>
       .loading-dots .dot {
         animation: dot-pulse 1.4s infinite ease-in-out both;
-        font-size: 2rem;
-        font-weight: bold;
       }
       .loading-dots .dot:nth-child(1) { animation-delay: 0s; }
       .loading-dots .dot:nth-child(2) { animation-delay: 0.2s; }
@@ -413,7 +472,7 @@ export async function renderFeedbackFragment(
         const feedback = document.getElementById("feedback-correct");
         if (feedback) {
           const nextUrl = feedback.dataset.nextUrl;
-          const delay = parseInt(feedback.dataset.delay || "1500", 10);
+          const delay = parseInt(feedback.dataset.delay || "600", 10);
           const isComplete = feedback.dataset.isComplete === "true";
           const locale = feedback.dataset.locale || "de";
           setTimeout(function () {
@@ -439,42 +498,37 @@ export async function renderFeedbackFragment(
   }
 
   const hint = result.hint
-    ? `<div class="mt-4 p-3 bg-yellow-100/80 rounded-lg text-left">
-        <p class="text-sm text-yellow-800"><span class="font-semibold">💡 ${escapeHtml(t(locale, "hint"))}:</span> ${escapeHtml(result.hint)}</p>
+    ? `<div class="rounded-xl border border-line bg-white/70 p-3.5 text-left text-[15px] leading-relaxed">
+        <span class="font-semibold">${escapeHtml(t(locale, "hint"))}:</span> ${escapeHtml(result.hint)}
       </div>`
     : "";
 
   const explanation = result.explanation
-    ? `<div class="mt-3 p-3 bg-blue-100/80 rounded-lg text-left">
-        <p class="font-semibold text-blue-900 mb-1">${escapeHtml(t(locale, "solution"))}:</p>
-        <p class="text-sm text-blue-800 whitespace-pre-line">${escapeHtml(result.explanation)}</p>
+    ? `<div class="rounded-xl border border-line bg-white/70 p-3.5 text-left text-[15px] leading-relaxed">
+        <span class="mb-1 block font-semibold">${escapeHtml(t(locale, "solution"))}:</span>
+        <span class="whitespace-pre-line">${escapeHtml(result.explanation)}</span>
       </div>`
     : "";
 
+  const actionLabel = isComplete
+    ? t(locale, "showResult")
+    : t(locale, "nextTask");
+  const actionClass =
+    "min-h-13 self-start rounded-xl bg-mark px-5.5 py-3.5 text-[17px] font-bold text-white transition-colors hover:bg-mark-dark";
   const action = isComplete
-    ? `<a href="${escapeAttr(nextUrl)}" class="btn-primary w-full inline-block text-center">${escapeHtml(t(locale, "showResult"))} →</a>`
-    : `<button type="button" class="btn-primary w-full" hx-get="/api/test/task?locale=${escapeAttr(locale)}" hx-target="#task-container" hx-swap="innerHTML">${escapeHtml(t(locale, "nextTask"))} →</button>`;
+    ? `<a href="${escapeAttr(nextUrl)}" class="${actionClass}">${escapeHtml(actionLabel)}</a>`
+    : `<button type="button" class="${actionClass}" hx-get="/api/test/task?locale=${escapeAttr(locale)}" hx-target="#task-container" hx-swap="innerHTML">${escapeHtml(actionLabel)}</button>`;
 
-  return `<div class="feedback-incorrect bounce-in">
-    <div class="text-4xl mb-2">😅</div>
-    <p class="text-xl font-bold">${escapeHtml(t(locale, "incorrect"))}</p>
-    <p class="mt-2 text-lg">${escapeHtml(t(locale, "correctAnswerIs", { answer: result.correctAnswer }))}</p>
+  return `<div class="feedback-incorrect flex flex-col gap-3 slide-up">
+    <div class="flex items-center gap-3">
+      <span class="block size-6.5 shrink-0 rounded-full bg-mark"></span>
+      <span class="text-[22px] font-bold">${escapeHtml(t(locale, "incorrect"))}</span>
+    </div>
+    <span class="text-base leading-relaxed">${escapeHtml(t(locale, "correctAnswerIs", { answer: result.correctAnswer }))}</span>
     ${hint}
     ${explanation}
-    <div class="mt-6">${action}</div>
-  </div>
-
-  <style>
-    .feedback-incorrect {
-      animation: shake 0.5s ease-in-out;
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-5px); }
-      40%, 80% { transform: translateX(5px); }
-    }
-  </style>`;
+    ${action}
+  </div>`;
 }
 
 export async function renderFeedbackResponse(
@@ -571,13 +625,14 @@ function resultFeedback(percent: number): {
   return { feedbackKey: "keepPracticing", stars: 2 };
 }
 
-function errorDetails(resultData: ResultData, locale: Locale): string {
-  if (!resultData.results.some((result) => !result.isCorrect)) return "";
+function reviewList(resultData: ResultData, locale: Locale): string {
+  const rows = resultData.results
+    .map((result) => {
+      const task = resultData.tasks.find(
+        (candidate) => candidate.id === result.taskId,
+      );
+      if (!task) return "";
 
-  const items = resultData.results
-    .map((result, index) => {
-      if (result.isCorrect) return "";
-      const task = resultData.tasks[index];
       const taskData = task.data as { story?: string } | undefined;
       const questionText =
         task.category === "word-problem" && taskData?.story
@@ -587,20 +642,27 @@ function errorDetails(resultData: ResultData, locale: Locale): string {
         ? questionText.replace(/<svg[\s\S]*?<\/svg>/gi, "").trim()
         : questionText;
 
-      return `<div class="bg-red-50 border border-red-200 rounded-xl p-4 text-left">
-        <p class="font-bold text-gray-800 mb-2 whitespace-pre-line">${escapeHtml(displayText)}</p>
-        <p class="text-red-600">${escapeHtml(t(locale, "yourAnswerWas", { answer: formatUserAnswer(result.userAnswer, task) }))}</p>
-        <p class="text-green-600">${escapeHtml(t(locale, "correctAnswer", { answer: formatCorrectAnswer(result.correctAnswer, task) }))}</p>
+      const detail = result.isCorrect
+        ? ""
+        : `<span class="mt-1 block text-sm text-muted">
+            ${escapeHtml(t(locale, "yourAnswerWas", { answer: formatUserAnswer(result.userAnswer, task) }))}
+            &middot;
+            ${escapeHtml(t(locale, "correctAnswer", { answer: formatCorrectAnswer(result.correctAnswer, task) }))}
+          </span>`;
+
+      return `<div class="flex items-start gap-3.5 border-b border-rule px-4.5 py-3.5 last:border-b-0">
+        <span class="mt-1.5 block size-5 shrink-0 rounded-full ${result.isCorrect ? "bg-ok" : "bg-mark"}"></span>
+        <span class="min-w-0 flex-1">
+          <span class="block text-[17px] leading-snug font-semibold whitespace-pre-line">${escapeHtml(displayText)}</span>
+          ${detail}
+        </span>
+        <span class="shrink-0 text-[15px] font-semibold ${result.isCorrect ? "text-ok" : "text-mark"}">${escapeHtml(t(locale, result.isCorrect ? "markRight" : "markPractise"))}</span>
       </div>`;
     })
     .join("");
 
-  return `<div x-data="{ showErrors: false }" class="mb-8">
-    <button @click="showErrors = !showErrors" class="btn-secondary w-full mb-4">
-      <span x-text="showErrors ? '${escapeAttr(t(locale, "hideErrors"))}' : '${escapeAttr(t(locale, "showErrors"))}'"></span>
-    </button>
-    <div x-show="showErrors" x-transition class="space-y-3">${items}</div>
-  </div>`;
+  if (!rows) return "";
+  return `<div class="overflow-hidden rounded-[14px] border border-line">${rows}</div>`;
 }
 
 export async function renderResultFragment(
@@ -610,48 +672,28 @@ export async function renderResultFragment(
 ): Promise<string> {
   const { correct, total, percent } = resultData;
   const { feedbackKey, stars } = resultFeedback(percent);
-  const starHtml = Array.from({ length: 5 })
+
+  const stamps = Array.from({ length: 5 })
     .map(
       (_, index) =>
-        `<span class="star" style="animation-delay: ${index * 0.1}s">${index < stars ? "⭐" : "☆"}</span>`,
+        `<span class="block size-6.5 rounded-full border-2 ${index < stars ? "border-mark bg-mark" : "border-line"}"></span>`,
     )
     .join("");
 
-  return `<div class="glass-card-strong p-6 md:p-10 max-w-2xl w-full mx-auto">
-    <div class="text-center mb-8 bounce-in">
-      <h1 class="text-3xl md:text-4xl font-bold text-purple-700 mb-4">${escapeHtml(t(locale, "result"))}</h1>
-      <div class="flex justify-center gap-1 mb-4">${starHtml}</div>
-      <div class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">${escapeHtml(t(locale, "youSolved", { correct, total }))}</div>
-      <div class="text-xl text-purple-600 font-bold">${escapeHtml(t(locale, "percent", { percent }))}</div>
+  return `<div id="speak-page" class="paper-card mx-auto flex w-full max-w-[620px] flex-col gap-6 px-7 py-8">
+    <div class="flex flex-col items-center gap-3.5 text-center">
+      <span class="text-sm font-semibold tracking-[.1em] text-muted uppercase">${escapeHtml(t(locale, "pageDone"))}</span>
+      <h1 class="text-[30px] leading-tight font-bold">${escapeHtml(t(locale, "resultScore", { correct, total }))}</h1>
+      <div class="flex items-center gap-2.5" aria-hidden="true">${stamps}</div>
+      <span class="text-[17px] text-muted">${escapeHtml(t(locale, feedbackKey))}</span>
+      <span class="text-[15px] text-faint">${escapeHtml(t(locale, "percent", { percent }))}</span>
     </div>
 
-    <div class="flex justify-center mb-8">
-      <div class="relative size-40">
-        <svg class="size-full transform -rotate-90" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="8"></circle>
-          <circle cx="50" cy="50" r="45" fill="none" stroke="url(#gradient)" stroke-width="8" stroke-linecap="round" stroke-dasharray="${percent * 2.83} 283" class="transition-all duration-1000 ease-out"></circle>
-          <defs>
-            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#22c55e"></stop>
-              <stop offset="100%" stop-color="#10b981"></stop>
-            </linearGradient>
-          </defs>
-        </svg>
-        <div class="absolute inset-0 flex items-center justify-center">
-          <span class="text-3xl font-bold text-gray-800">${percent}%</span>
-        </div>
-      </div>
-    </div>
+    ${reviewList(resultData, locale)}
 
-    <div class="text-center mb-8 slide-up">
-      <p class="text-xl text-gray-700">${escapeHtml(t(locale, feedbackKey))}</p>
-    </div>
-
-    ${errorDetails(resultData, locale)}
-
-    <div class="flex flex-col sm:flex-row gap-4 justify-center">
-      <a href="${escapeAttr(getLocalizedPath(`/?grade=${session.grade}&count=${session.totalTasks}`, locale))}" class="btn-primary">${escapeHtml(t(locale, "tryAgain"))}</a>
-      <a href="${escapeAttr(getLocalizedPath("/", locale))}" class="btn-secondary">${escapeHtml(t(locale, "backToStart"))}</a>
+    <div class="flex flex-col gap-3.5">
+      <a href="${escapeAttr(getLocalizedPath(`/?grade=${session.grade}&count=${session.totalTasks}`, locale))}" class="btn-primary text-center">${escapeHtml(t(locale, "tryAgain"))}</a>
+      <a href="${escapeAttr(getLocalizedPath("/", locale))}" class="btn-secondary text-center">${escapeHtml(t(locale, "backToStart"))}</a>
     </div>
   </div>`;
 }

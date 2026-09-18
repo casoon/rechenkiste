@@ -1,7 +1,9 @@
 ---
 import { ClientRouter } from "astro:transitions";
-import "@fontsource/comic-neue/400.css";
-import "@fontsource/comic-neue/700.css";
+import "@fontsource/lexend/400.css";
+import "@fontsource/lexend/500.css";
+import "@fontsource/lexend/600.css";
+import "@fontsource/lexend/700.css";
 import "@styles/base.css";
 import type { Locale } from "@i18n/translations";
 import { t, getLocalizedPath } from "@i18n/translations";
@@ -27,10 +29,10 @@ const seoDescriptions = {
 const metaDescription = description || seoDescriptions[locale];
 const fullTitle = `${title} - ${t(locale, "appName")}`;
 
-const locales: { code: Locale; label: string; flag: string }[] = [
-    { code: "de", label: "Deutsch", flag: "🇩🇪" },
-    { code: "en", label: "English", flag: "🇬🇧" },
-    { code: "uk", label: "Українська", flag: "🇺🇦" },
+const locales: { code: Locale; label: string }[] = [
+    { code: "de", label: "Deutsch" },
+    { code: "en", label: "English" },
+    { code: "uk", label: "Українська" },
 ];
 
 const currentPath = Astro.url.pathname.replace(/^\/(en|uk)/, "") || "/";
@@ -69,7 +71,7 @@ const currentPath = Astro.url.pathname.replace(/^\/(en|uk)/, "") || "/";
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#8B5CF6" />
+        <meta name="theme-color" content="#1B3A6B" />
 
         <!-- Mobile App Meta -->
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -128,92 +130,154 @@ const currentPath = Astro.url.pathname.replace(/^\/(en|uk)/, "") || "/";
         </script>
     </head>
     <body class="min-h-screen">
-        <div class="min-h-screen flex flex-col">
+        <div class="flex min-h-screen flex-col">
             <!-- Header -->
-            <header class="p-4">
+            <header class="bg-ink text-paper">
                 <div
-                    class="max-w-4xl mx-auto flex justify-between items-center"
+                    class="mx-auto flex max-w-[1000px] flex-wrap items-center justify-between gap-4 px-6 py-3.5"
                 >
                     <a
                         href={getLocalizedPath("/", locale)}
-                        class="flex items-center gap-3 group"
+                        class="flex min-h-11 items-center text-paper"
                     >
-                        <span class="text-4xl">🧮</span>
-                        <span
-                            class="text-2xl font-bold text-purple-700 group-hover:text-purple-900 transition-colors"
-                        >
+                        <span class="text-xl font-semibold">
                             {t(locale, "appName")}
                         </span>
                     </a>
 
-                    <!-- Language Switcher -->
-                    <nav
-                        class="language-switcher"
-                        aria-label={t(locale, "language")}
-                    >
-                        {
-                            locales.map((loc) => (
-                                <a
-                                    href={getLocalizedPath(
-                                        currentPath,
-                                        loc.code,
-                                    )}
-                                    class:list={[
-                                        "language-btn",
-                                        { active: locale === loc.code },
-                                    ]}
-                                    aria-current={
-                                        locale === loc.code ? "page" : undefined
-                                    }
-                                >
-                                    <span class="mr-1">{loc.flag}</span>
-                                    <span class="hidden sm:inline">
+                    <div class="flex items-center gap-4">
+                        <button
+                            type="button"
+                            data-speak="#speak-page"
+                            hidden
+                            class="min-h-10 rounded-full bg-paper px-3.5 py-2 text-sm font-semibold text-ink transition-colors hover:bg-bad-soft"
+                        >
+                            {t(locale, "readPage")}
+                        </button>
+
+                        <nav
+                            class="flex gap-3"
+                            aria-label={t(locale, "language")}
+                        >
+                            {
+                                locales.map((loc) => (
+                                    <a
+                                        href={getLocalizedPath(
+                                            currentPath,
+                                            loc.code,
+                                        )}
+                                        class:list={[
+                                            "language-btn",
+                                            { active: locale === loc.code },
+                                        ]}
+                                        aria-current={
+                                            locale === loc.code
+                                                ? "page"
+                                                : undefined
+                                        }
+                                    >
                                         {loc.label}
-                                    </span>
-                                </a>
-                            ))
-                        }
-                    </nav>
+                                    </a>
+                                ))
+                            }
+                        </nav>
+                    </div>
                 </div>
             </header>
 
             <!-- Main Content -->
             <main
-                class="flex-1 flex items-center justify-center p-4"
+                class="flex flex-1 justify-center px-5 pt-9 pb-13"
                 transition:animate="fade"
             >
                 <slot />
             </main>
 
             <!-- Footer -->
-            <footer class="p-4 text-center text-gray-600 text-sm space-y-2">
-                <p>Made with ❤️ for kids</p>
-                <p class="flex items-center justify-center gap-4">
-                    <a
-                        href="https://www.casoon.de"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="hover:text-purple-600 transition-colors"
-                    >
-                        casoon.de
-                    </a>
-                    <span class="text-gray-300">|</span>
-                    <a
-                        href={getLocalizedPath("/technik", locale)}
-                        class="hover:text-purple-600 transition-colors"
-                    >
-                        {t(locale, "techInfo")}
-                    </a>
-                    <span class="text-gray-300">|</span>
+            <footer class="border-t border-line bg-panel">
+                <div
+                    class="mx-auto flex max-w-[1000px] flex-wrap items-center justify-between gap-4 px-6 py-4.5 text-sm text-muted"
+                >
+                    <div class="flex items-center gap-4">
+                        <a
+                            href="https://www.casoon.de"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="text-ink hover:text-mark"
+                        >
+                            casoon.de
+                        </a>
+                        <span class="text-faint">|</span>
+                        <a
+                            href={getLocalizedPath("/technik", locale)}
+                            class="border-b border-line text-ink hover:text-mark"
+                        >
+                            {t(locale, "techInfo")}
+                        </a>
+                    </div>
                     <span
                         id="load-counter"
-                        class="text-gray-400 font-mono text-xs cursor-help"
+                        class="cursor-help font-mono text-xs text-faint"
                         title="F = Fragment-Loads (HTMX), P = Page-Loads (Browser). Mehr Fragments = schnellere App!"
                         hx-get="/api/test/counter"
                         hx-trigger="load, taskLoaded from:body, feedbackShown from:body"
                         hx-swap="innerHTML"></span>
-                </p>
+                </div>
             </footer>
         </div>
+
+        <script is:inline define:vars={{ speechLang: locale }}>
+            (function () {
+                if (!("speechSynthesis" in window)) return;
+
+                function hasVoice() {
+                    return speechSynthesis
+                        .getVoices()
+                        .some(
+                            (v) =>
+                                v.lang &&
+                                v.lang.toLowerCase().startsWith(speechLang),
+                        );
+                }
+
+                function revealButtons() {
+                    if (!hasVoice()) return;
+                    document
+                        .querySelectorAll("[data-speak]")
+                        .forEach((el) => el.removeAttribute("hidden"));
+                }
+
+                speechSynthesis.addEventListener(
+                    "voiceschanged",
+                    revealButtons,
+                );
+                document.addEventListener("astro:page-load", revealButtons);
+                document.addEventListener("htmx:afterSwap", revealButtons);
+                revealButtons();
+
+                document.addEventListener("click", function (event) {
+                    const button = event.target.closest("[data-speak]");
+                    if (!button) return;
+
+                    const source =
+                        document.querySelector(button.dataset.speak) ||
+                        document.querySelector("main");
+                    if (!source) return;
+
+                    const text = source.innerText.replace(/\s+/g, " ").trim();
+                    if (!text) return;
+
+                    speechSynthesis.cancel();
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = speechLang;
+                    utterance.rate = 0.9;
+                    speechSynthesis.speak(utterance);
+                });
+
+                document.addEventListener("astro:before-swap", function () {
+                    speechSynthesis.cancel();
+                });
+            })();
+        </script>
     </body>
 </html>

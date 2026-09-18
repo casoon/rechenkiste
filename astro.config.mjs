@@ -21,6 +21,18 @@ export default defineConfig({
         ignored: ["**/.wrangler/**"],
       },
     },
+    ssr: {
+      // Cloudflare/workerd dev: cold node_modules/.vite/deps_ssr means Vite discovers
+      // SSR deps during the first render and fires a "program reload" that kills the
+      // workerd runner mid-chunk (exits 1). This project has no @astrojs/<framework>
+      // integration, so the crash is unproven here, but noDiscovery plus a minimal
+      // baseline include is a safe precaution. (Astro doesn't read
+      // environments.ssr.optimizeDeps — this must be vite.ssr.optimizeDeps.)
+      optimizeDeps: {
+        noDiscovery: true,
+        include: ["astro/logger/console"],
+      },
+    },
   },
   i18n: {
     defaultLocale: "de",
