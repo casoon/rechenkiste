@@ -1,0 +1,15 @@
+---
+import type { Locale } from "@i18n/translations";
+
+interface Props {
+    sessionId: string;
+    locale: Locale;
+    taskId: string;
+}
+
+const { sessionId, locale, taskId } = Astro.props;
+---
+
+<input type="hidden" name="sessionId" value={sessionId} />
+<input type="hidden" name="locale" value={locale} />
+<input type="hidden" name="taskId" value={taskId} />

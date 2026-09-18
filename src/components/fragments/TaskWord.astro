@@ -1,0 +1,38 @@
+---
+import QuestionBlock from "@fragments/QuestionBlock.astro";
+import AnswerForm from "@fragments/AnswerForm.astro";
+import { t } from "@i18n/translations";
+import type { Locale } from "@i18n/translations";
+
+interface Props {
+    locale: Locale;
+    sessionId: string;
+    taskId: string;
+    story: string;
+}
+
+const { locale, sessionId, taskId, story } = Astro.props;
+---
+
+<QuestionBlock prompt={t(locale, "wordProblem")}>
+    <p class="rounded-xl border border-line bg-field p-5 text-xl leading-relaxed">
+        {story}
+    </p>
+</QuestionBlock>
+
+<AnswerForm locale={locale} sessionId={sessionId} taskId={taskId}>
+    <div>
+        <label for="answer" class="sr-only">{t(locale, "yourAnswer")}</label>
+        <input
+            type="text"
+            id="answer"
+            name="answer"
+            class="input-field"
+            placeholder={t(locale, "yourAnswer")}
+            autocomplete="off"
+            inputmode="numeric"
+            required
+            autofocus
+        />
+    </div>
+</AnswerForm>

@@ -6,7 +6,7 @@ import {
   getActiveTaskCount,
   incrementFragmentLoads,
 } from "@domain/session";
-import type { Locale } from "@i18n/translations";
+import { categoryLabel, type Locale } from "@i18n/translations";
 import { renderTaskFragment } from "@services/task-renderer";
 
 export const GET: APIRoute = async (context) => {
@@ -40,7 +40,8 @@ export const GET: APIRoute = async (context) => {
   const percent = Math.round((session.currentIndex / total) * 100);
 
   // Wrapper mit Progress-Daten hinzufügen
-  const html = `<div id="task-wrapper" data-current="${current}" data-total="${total}" data-percent="${percent}">${taskHtml}</div>`;
+  const category = categoryLabel(locale, currentTask.category);
+  const html = `<div id="task-wrapper" data-current="${current}" data-total="${total}" data-percent="${percent}" data-category="${category.replace(/"/g, "&quot;")}">${taskHtml}</div>`;
 
   return new Response(html, {
     status: 200,

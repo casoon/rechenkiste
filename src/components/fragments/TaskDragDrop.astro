@@ -1,0 +1,135 @@
+---
+import QuestionBlock from "@fragments/QuestionBlock.astro";
+import AnswerFields from "@fragments/AnswerFields.astro";
+import { t } from "@i18n/translations";
+import type { Locale } from "@i18n/translations";
+import type { DragDropItem, DragDropTarget } from "@domain/task-system";
+
+interface Props {
+    locale: Locale;
+    sessionId: string;
+    taskId: string;
+    questionHtml: string;
+    dragItems: DragDropItem[];
+    dropTargets: DragDropTarget[];
+}
+
+const { locale, sessionId, taskId, questionHtml, dragItems, dropTargets } =
+    Astro.props;
+
+const state = `{
+    items: ${JSON.stringify(dragItems)},
+    targets: ${JSON.stringify(dropTargets)},
+    assignments: {},
+    dragging: null,
+    startDrag(itemId) { this.dragging = itemId; },
+    endDrag() { this.dragging = null; },
+    dropOnTarget(targetId) {
+      if (this.dragging) {
+        Object.keys(this.assignments).forEach(key => {
+          if (this.assignments[key] === this.dragging) delete this.assignments[key];
+        });
+        this.assignments[targetId] = this.dragging;
+        this.dragging = null;
+      }
+    },
+    removeFromTarget(targetId) { delete this.assignments[targetId]; },
+    getItemInTarget(targetId) {
+      const itemId = this.assignments[targetId];
+      if (!itemId) return null;
+      return this.items.find(i => i.id === itemId);
+    },
+    isItemAssigned(itemId) { return Object.values(this.assignments).includes(itemId); },
+    getAnswer() {
+      const answer = {};
+      Object.entries(this.assignments).forEach(([targetId, itemId]) => {
+        answer[itemId] = targetId;
+      });
+      return JSON.stringify(answer);
+    },
+    isComplete() { return Object.keys(this.assignments).length === this.items.length; }
+  }`;
+---
+
+<QuestionBlock prompt={t(locale, "matchItems")}>
+    <span class="text-[32px] leading-tight font-bold" set:html={questionHtml} />
+    <span class="text-base leading-relaxed text-muted">
+        {t(locale, "matchInstructions")}
+    </span>
+</QuestionBlock>
+
+<div id="drag-drop-container" class="mt-6 flex flex-col gap-4.5" x-data={state}>
+    <div class="flex min-h-16 flex-wrap items-center gap-2.5">
+        <template x-for="item in items" :key="item.id">
+            <button
+                type="button"
+                x-show="!isItemAssigned(item.id)"
+                class="drag-item min-h-15 cursor-grab rounded-xl border-2 border-ink bg-white px-5.5 py-3.5 text-2xl font-bold text-ink"
+                :class="dragging === item.id && 'bg-field opacity-60'"
+                :aria-pressed="dragging === item.id"
+                draggable="true"
+                x-on:dragstart="startDrag(item.id)"
+                x-on:dragend="endDrag()"
+                x-on:touchstart="startDrag(item.id)"
+                x-on:click="startDrag(item.id)"
+                x-text="item.content"></button>
+        </template>
+        <div
+            x-show="items.every(i => isItemAssigned(i.id))"
+            class="text-muted"
+        >
+            {t(locale, "allItemsAssigned")}
+        </div>
+    </div>
+
+    <div class="flex items-center gap-2.5">
+        <span class="block h-0.5 flex-1 bg-grid"></span>
+        <span class="text-sm text-muted">{t(locale, "matchInstructions")}</span>
+        <span class="block h-0.5 flex-1 bg-grid"></span>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+        <template x-for="target in targets" :key="target.id">
+            <button
+                type="button"
+                class="drop-target flex min-h-20 flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-4 transition-colors"
+                :class="getItemInTarget(target.id) ? 'border-ink bg-white' : 'border-faint bg-field'"
+                x-on:dragover.prevent
+                x-on:drop="dropOnTarget(target.id)"
+                x-on:click="dragging ? dropOnTarget(target.id) : getItemInTarget(target.id) && removeFromTarget(target.id)"
+            >
+                <span class="text-sm text-muted" x-text="target.label"></span>
+                <template x-if="getItemInTarget(target.id)">
+                    <span
+                        class="text-2xl font-bold text-ink"
+                        x-text="getItemInTarget(target.id)?.content"
+                        title={t(locale, "removeAssignment")}></span>
+                </template>
+                <template x-if="!getItemInTarget(target.id)">
+                    <span class="text-2xl text-faint">-</span>
+                </template>
+            </button>
+        </template>
+    </div>
+
+    <form
+        id="answer-form"
+        hx-post="/api/test/answer"
+        hx-target="#feedback-container"
+        hx-swap="innerHTML"
+        hx-disabled-elt="find button[type='submit']"
+    >
+        <AnswerFields sessionId={sessionId} locale={locale} taskId={taskId} />
+        <input type="hidden" name="answer" :value="getAnswer()" />
+        <button
+            type="submit"
+            class="btn-check"
+            :disabled="!isComplete()"
+            :class="!isComplete() && 'opacity-50 cursor-not-allowed'"
+        >
+            {t(locale, "checkAnswer")}
+        </button>
+    </form>
+</div>
+
+<div id="feedback-container" class="mt-6 empty:mt-0"></div>

@@ -1,0 +1,140 @@
+---
+import { t, getLocalizedPath } from "@i18n/translations";
+import type { Locale } from "@i18n/translations";
+import type { SerializedTask, TestSession } from "@domain/session";
+import type { TaskInstance } from "@domain/task-system";
+import {
+    formatUserAnswer,
+    formatCorrectAnswer,
+    resultFeedback,
+    questionText,
+} from "@services/answer-format";
+
+interface ResultData {
+    correct: number;
+    total: number;
+    percent: number;
+    results: Array<{
+        taskId: string;
+        isCorrect: boolean;
+        userAnswer: string | number;
+        correctAnswer: string | number;
+    }>;
+    tasks: Array<SerializedTask | TaskInstance>;
+}
+
+interface Props {
+    locale: Locale;
+    session: TestSession;
+    resultData: ResultData;
+}
+
+const { locale, session, resultData } = Astro.props;
+const { correct, total, percent, results, tasks } = resultData;
+const { feedbackKey, stars } = resultFeedback(percent);
+
+const review = results.flatMap((result) => {
+    const task = tasks.find((candidate) => candidate.id === result.taskId);
+    return task ? [{ result, task }] : [];
+});
+---
+
+<div
+    id="speak-page"
+    class="paper-card mx-auto flex w-full max-w-[620px] flex-col gap-6 px-7 py-8"
+>
+    <div class="flex flex-col items-center gap-3.5 text-center">
+        <span
+            class="text-sm font-semibold tracking-[.1em] text-muted uppercase"
+        >
+            {t(locale, "pageDone")}
+        </span>
+        <h1 class="text-[30px] leading-tight font-bold">
+            {t(locale, "resultScore", { correct, total })}
+        </h1>
+        <div class="flex items-center gap-2.5" aria-hidden="true">
+            {
+                Array.from({ length: 5 }).map((_, index) => (
+                    <span
+                        class:list={[
+                            "block size-6.5 rounded-full border-2",
+                            index < stars ? "border-mark bg-mark" : "border-line",
+                        ]}
+                    />
+                ))
+            }
+        </div>
+        <span class="text-[17px] text-muted">{t(locale, feedbackKey)}</span>
+        <span class="text-[15px] text-faint">
+            {t(locale, "percent", { percent })}
+        </span>
+    </div>
+
+    {
+        review.length > 0 && (
+            <div class="overflow-hidden rounded-[14px] border border-line">
+                {review.map(({ result, task }) => (
+                    <div class="flex items-start gap-3.5 border-b border-rule px-4.5 py-3.5 last:border-b-0">
+                        <span
+                            class:list={[
+                                "mt-1.5 block size-5 shrink-0 rounded-full",
+                                result.isCorrect ? "bg-ok" : "bg-mark",
+                            ]}
+                        />
+                        <span class="min-w-0 flex-1">
+                            <span class="block text-[17px] leading-snug font-semibold whitespace-pre-line">
+                                {questionText(task)}
+                            </span>
+                            {!result.isCorrect && (
+                                <span class="mt-1 block text-sm text-muted">
+                                    {t(locale, "yourAnswerWas", {
+                                        answer: formatUserAnswer(
+                                            result.userAnswer,
+                                            task,
+                                        ),
+                                    })}
+                                    {" · "}
+                                    {t(locale, "correctAnswer", {
+                                        answer: formatCorrectAnswer(
+                                            result.correctAnswer,
+                                            task,
+                                        ),
+                                    })}
+                                </span>
+                            )}
+                        </span>
+                        <span
+                            class:list={[
+                                "shrink-0 text-[15px] font-semibold",
+                                result.isCorrect ? "text-ok" : "text-mark",
+                            ]}
+                        >
+                            {t(
+                                locale,
+                                result.isCorrect ? "markRight" : "markPractise",
+                            )}
+                        </span>
+                    </div>
+                ))}
+            </div>
+        )
+    }
+
+    <div class="flex flex-col gap-3.5">
+        <a
+            href={getLocalizedPath(
+                `/?grade=${session.grade}&count=${session.totalTasks}`,
+                locale,
+            )}
+            class="btn-primary text-center"
+        >
+            {t(locale, "tryAgain")}
+        </a>
+        <a
+            href={getLocalizedPath("/", locale)}
+            class="btn-secondary text-center"
+        >
+            {t(locale, "backToStart")}
+        </a>
+    </div>
+</div>

@@ -207,6 +207,16 @@
         @apply rounded-[14px] border-2 border-mark bg-bad-soft p-5 text-bad-ink;
     }
 
+    /* Ziehbare Kacheln (Drag-and-Drop-Aufgaben) */
+    .drag-item {
+        user-select: none;
+        touch-action: none;
+    }
+
+    .drag-item:active {
+        cursor: grabbing;
+    }
+
     /* Codeblock auf der Technik-Seite */
     .code-block {
         @apply overflow-x-auto rounded-xl bg-[#11233e] p-[18px] text-[13.5px]
@@ -227,6 +237,30 @@
     }
 }
 
+/* Ladepunkte im Richtig-Feedback */
+.loading-dots .dot {
+    animation: dot-pulse 1.4s infinite ease-in-out both;
+}
+
+.loading-dots .dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.loading-dots .dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes dot-pulse {
+    0%,
+    80%,
+    100% {
+        opacity: 0.3;
+    }
+    40% {
+        opacity: 1;
+    }
+}
+
 .slide-up {
     animation: slide-up 0.4s ease-out;
 }
@@ -243,7 +277,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .slide-up {
+    .slide-up,
+    .loading-dots .dot {
         animation: none;
     }
 }

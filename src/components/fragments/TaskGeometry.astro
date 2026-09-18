@@ -1,0 +1,38 @@
+---
+import QuestionBlock from "@fragments/QuestionBlock.astro";
+import AnswerForm from "@fragments/AnswerForm.astro";
+import AnswerInput from "@fragments/AnswerInput.astro";
+import type { Locale } from "@i18n/translations";
+import type { AnswerInputConfig } from "@services/answer-input";
+
+interface Props {
+    locale: Locale;
+    sessionId: string;
+    taskId: string;
+    svgMarkup: string;
+    prompt: string;
+    inputLabel?: string;
+    answerInput: AnswerInputConfig;
+}
+
+const {
+    locale,
+    sessionId,
+    taskId,
+    svgMarkup,
+    prompt,
+    inputLabel,
+    answerInput,
+} = Astro.props;
+---
+
+<QuestionBlock>
+    <div class="rounded-xl border border-line bg-field p-4">
+        <Fragment set:html={svgMarkup} />
+    </div>
+    <span class="text-2xl leading-snug font-semibold">{prompt}</span>
+</QuestionBlock>
+
+<AnswerForm locale={locale} sessionId={sessionId} taskId={taskId}>
+    <AnswerInput locale={locale} inputLabel={inputLabel} {...answerInput} />
+</AnswerForm>

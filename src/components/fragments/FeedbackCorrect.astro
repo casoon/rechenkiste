@@ -1,0 +1,61 @@
+---
+import { t } from "@i18n/translations";
+import type { Locale } from "@i18n/translations";
+
+interface Props {
+    locale: Locale;
+    nextUrl: string;
+    isComplete: boolean;
+    delayMs: number;
+}
+
+const { locale, nextUrl, isComplete, delayMs } = Astro.props;
+---
+
+<div
+    id="feedback-correct"
+    class="feedback-correct flex flex-col gap-3 slide-up"
+    data-next-url={nextUrl}
+    data-delay={String(delayMs)}
+    data-is-complete={isComplete ? "true" : "false"}
+    data-locale={locale}
+>
+    <div class="flex items-center gap-3">
+        <span class="block size-6.5 shrink-0 rounded-full bg-ok"></span>
+        <span class="text-[22px] font-bold">{t(locale, "correct")}</span>
+    </div>
+    <span class="loading-dots text-2xl font-bold" aria-hidden="true">
+        <span class="dot">.</span><span class="dot">.</span><span class="dot"
+            >.</span
+        >
+    </span>
+</div>
+
+<script is:inline>
+    (function () {
+        const feedback = document.getElementById("feedback-correct");
+        if (!feedback) return;
+
+        const nextUrl = feedback.dataset.nextUrl;
+        const delay = parseInt(feedback.dataset.delay || "600", 10);
+        const isComplete = feedback.dataset.isComplete === "true";
+        const locale = feedback.dataset.locale || "de";
+
+        setTimeout(function () {
+            if (!nextUrl) return;
+            if (isComplete) {
+                window.location.href = nextUrl;
+                return;
+            }
+            const taskContainer = document.getElementById("task-container");
+            if (taskContainer && window.htmx) {
+                window.htmx.ajax("GET", "/api/test/task?locale=" + locale, {
+                    target: "#task-container",
+                    swap: "innerHTML",
+                });
+            } else {
+                window.location.href = nextUrl;
+            }
+        }, delay);
+    })();
+</script>
