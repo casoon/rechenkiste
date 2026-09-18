@@ -9,7 +9,7 @@ const locale: Locale = getLocaleFromUrl(Astro.url);
 
 const session = await loadSession(Astro);
 if (!session) {
-    return Astro.redirect(getLocalizedPath("/", locale));
+    return Astro.redirect("/");
 }
 
 const resultData = getResults(session);

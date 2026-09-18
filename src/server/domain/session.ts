@@ -75,6 +75,7 @@ export interface TestSession {
   consecutiveCorrect: number;
   consecutiveIncorrect: number;
   incorrectTaskIds: string[];
+  retryTaskIds: string[];
   retryMode: boolean;
   // Fragment-Counter für Performance-Messung
   fragmentLoads: number;
@@ -322,6 +323,7 @@ export function createSession(
     consecutiveCorrect: 0,
     consecutiveIncorrect: 0,
     incorrectTaskIds: [],
+    retryTaskIds: [],
     retryMode: false,
     fragmentLoads: 0,
     pageLoads: 1, // Erste Seite ist ein Page-Load
@@ -393,6 +395,7 @@ export function createCustomSession(
     consecutiveCorrect: 0,
     consecutiveIncorrect: 0,
     incorrectTaskIds: [],
+    retryTaskIds: [],
     retryMode: false,
     fragmentLoads: 0,
     pageLoads: 1,
@@ -431,9 +434,23 @@ export async function loadSession(
  * Gibt die aktuelle Aufgabe zurück
  */
 export function getCurrentTask(session: TestSession): TaskInstance | undefined {
-  const serialized = session.tasks[session.currentIndex];
+  const taskId = session.retryMode
+    ? session.retryTaskIds?.[session.currentIndex]
+    : undefined;
+  const serialized = taskId
+    ? session.tasks.find((task) => task.id === taskId)
+    : session.tasks[session.currentIndex];
   if (!serialized) return undefined;
   return deserializeTask(serialized);
+}
+
+/**
+ * Gibt die Anzahl der Aufgaben im aktuell aktiven Durchlauf zurück.
+ */
+export function getActiveTaskCount(session: TestSession): number {
+  return session.retryMode
+    ? (session.retryTaskIds?.length ?? 0)
+    : session.totalTasks;
 }
 
 /**
@@ -446,6 +463,17 @@ export function getTaskById(
   const serialized = session.tasks.find((t) => t.id === taskId);
   if (!serialized) return undefined;
   return deserializeTask(serialized);
+}
+
+/**
+ * Prüft, ob eine Antwort zur aktuell angezeigten Session und Aufgabe gehört.
+ */
+export function isCurrentTaskSubmission(
+  session: TestSession,
+  sessionId: string | null,
+  taskId: string | null,
+): boolean {
+  return sessionId === session.id && taskId === getCurrentTask(session)?.id;
 }
 
 /**
@@ -579,13 +607,7 @@ export function nextTask(session: TestSession): void {
   ) {
     session.retryMode = true;
     session.currentIndex = 0;
-
-    const incorrectTasks = session.incorrectTaskIds
-      .map((id) => session.tasks.find((t) => t.id === id))
-      .filter((t): t is SerializedTask => t !== undefined);
-
-    session.tasks = incorrectTasks;
-    session.totalTasks = incorrectTasks.length;
+    session.retryTaskIds = [...session.incorrectTaskIds];
     session.incorrectTaskIds = [];
   }
 }
@@ -604,7 +626,7 @@ export function isTestComplete(session: TestSession): boolean {
     return false;
   }
 
-  return session.currentIndex >= session.totalTasks;
+  return session.currentIndex >= getActiveTaskCount(session);
 }
 
 /**
@@ -617,7 +639,9 @@ export function getRetryInfo(session: TestSession): {
 } {
   return {
     isRetryMode: session.retryMode,
-    incorrectCount: session.incorrectTaskIds.length,
+    incorrectCount: session.retryMode
+      ? (session.retryTaskIds?.length ?? 0)
+      : session.incorrectTaskIds.length,
     originalTotal: session.results.length,
   };
 }
@@ -641,7 +665,10 @@ export function getResults(session: TestSession): {
     total,
     percent,
     results: session.results,
-    tasks: session.tasks.map(deserializeTask),
+    tasks: session.results
+      .map((result) => session.tasks.find((task) => task.id === result.taskId))
+      .filter((task): task is SerializedTask => task !== undefined)
+      .map(deserializeTask),
   };
 }
 

@@ -25,3 +25,9 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# local task/idea tracking (see global CLAUDE.md)
+plan/
+
+# local dev-server launch config (Claude Code browser preview)
+.claude/launch.json

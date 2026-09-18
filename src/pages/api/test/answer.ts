@@ -6,6 +6,7 @@ import {
   nextTask,
   isTestComplete,
   incrementFragmentLoads,
+  isCurrentTaskSubmission,
 } from "@domain/session";
 import type { Locale } from "@i18n/translations";
 import { getLocalizedPath } from "@i18n/translations";
@@ -17,6 +18,8 @@ export const POST: APIRoute = async (context) => {
 
   const answer = formData.get("answer") as string;
   const locale = (formData.get("locale") as Locale) || "de";
+  const sessionId = formData.get("sessionId")?.toString() ?? null;
+  const taskId = formData.get("taskId")?.toString() ?? null;
 
   if (!answer) {
     return new Response("Bad Request", { status: 400 });
@@ -27,6 +30,10 @@ export const POST: APIRoute = async (context) => {
 
   if (!session) {
     return new Response("Session not found", { status: 404 });
+  }
+
+  if (!isCurrentTaskSubmission(session, sessionId, taskId)) {
+    return new Response("Stale task submission", { status: 409 });
   }
 
   // Submit and validate the answer

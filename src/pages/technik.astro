@@ -1,6 +1,6 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
-import { getLocaleFromUrl } from "@i18n/translations";
+import { t as translate, getLocaleFromUrl, getLocalizedPath } from "@i18n/translations";
 import type { Locale } from "@i18n/translations";
 
 const locale: Locale = getLocaleFromUrl(Astro.url);
@@ -137,61 +137,62 @@ const t = content[locale];
 ---
 
 <BaseLayout title={t.title} locale={locale}>
-    <div class="glass-card-strong p-6 md:p-10 max-w-4xl w-full">
-        <h1 class="text-3xl md:text-4xl font-bold text-purple-700 mb-2">
-            {t.title}
-        </h1>
-        <p class="text-xl text-gray-600 mb-8">{t.subtitle}</p>
-
-        <p class="text-gray-700 mb-8 text-lg">{t.intro}</p>
+    <div
+        id="speak-page"
+        class="paper-card flex w-full max-w-[880px] flex-col gap-3.5 px-8 pt-8 pb-10 slide-up"
+    >
+        <h1 class="card-title text-[32px]">{t.title}</h1>
+        <p class="card-rule text-[17px] text-muted">{t.subtitle}</p>
+        <p class="mt-3.5 text-[17px] leading-relaxed text-ink-soft text-pretty">
+            {t.intro}
+        </p>
 
         <!-- AHA-Stack -->
-        <section class="mb-10">
-            <h2 class="text-2xl font-bold text-purple-600 mb-4">
-                {t.ahaTitle}
-            </h2>
-            <p class="text-gray-700 mb-4">{t.ahaDesc}</p>
-
-            <div class="grid md:grid-cols-3 gap-4">
-                <div
-                    class="bg-orange-50 p-4 rounded-xl border-2 border-orange-200"
-                >
-                    <h3 class="font-bold text-orange-700 text-lg">Astro</h3>
-                    <p class="text-sm text-gray-600 mt-2">{t.ahaAstro}</p>
-                </div>
-                <div class="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
-                    <h3 class="font-bold text-blue-700 text-lg">HTMX</h3>
-                    <p class="text-sm text-gray-600 mt-2">{t.ahaHtmx}</p>
-                </div>
-                <div class="bg-cyan-50 p-4 rounded-xl border-2 border-cyan-200">
-                    <h3 class="font-bold text-cyan-700 text-lg">Alpine.js</h3>
-                    <p class="text-sm text-gray-600 mt-2">{t.ahaAlpine}</p>
-                </div>
+        <h2 class="mt-7 text-[23px] font-bold">{t.ahaTitle}</h2>
+        <p class="text-base leading-relaxed text-ink-soft">{t.ahaDesc}</p>
+        <div
+            class="mt-1.5 grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]"
+        >
+            <div
+                class="rounded-xl border border-line border-l-4 border-l-mark bg-paper p-4"
+            >
+                <div class="text-[17px] font-bold">Astro</div>
+                <p class="mt-1.5 text-[15px] leading-relaxed text-muted">
+                    {t.ahaAstro}
+                </p>
             </div>
-        </section>
+            <div
+                class="rounded-xl border border-line border-l-4 border-l-ink bg-paper p-4"
+            >
+                <div class="text-[17px] font-bold">HTMX</div>
+                <p class="mt-1.5 text-[15px] leading-relaxed text-muted">
+                    {t.ahaHtmx}
+                </p>
+            </div>
+            <div
+                class="rounded-xl border border-line border-l-4 border-l-ok bg-paper p-4"
+            >
+                <div class="text-[17px] font-bold">Alpine.js</div>
+                <p class="mt-1.5 text-[15px] leading-relaxed text-muted">
+                    {t.ahaAlpine}
+                </p>
+            </div>
+        </div>
 
         <!-- Fragment Renderer -->
-        <section class="mb-10">
-            <h2 class="text-2xl font-bold text-purple-600 mb-4">
-                {t.fragmentTitle}
-            </h2>
-            <p class="text-gray-700 mb-4">{t.fragmentDesc}</p>
+        <h2 class="mt-8 text-[23px] font-bold">{t.fragmentTitle}</h2>
+        <p class="text-base leading-relaxed text-ink-soft">{t.fragmentDesc}</p>
+        <div class="mt-2.5 text-base font-semibold">{t.fragmentFeatures}</div>
+        <ul class="list-disc pl-5.5 text-base leading-[1.75] text-muted">
+            <li>{t.fragmentF1}</li>
+            <li>{t.fragmentF2}</li>
+            <li>{t.fragmentF3}</li>
+            <li>{t.fragmentF4}</li>
+        </ul>
 
-            <p class="font-semibold text-gray-700 mb-2">{t.fragmentFeatures}</p>
-            <ul class="list-disc list-inside text-gray-600 space-y-1 mb-6">
-                <li>{t.fragmentF1}</li>
-                <li>{t.fragmentF2}</li>
-                <li>{t.fragmentF3}</li>
-                <li>{t.fragmentF4}</li>
-            </ul>
-
-            <h3 class="text-xl font-bold text-purple-500 mb-3">
-                {t.exampleTitle}
-            </h3>
-            <p class="text-gray-600 mb-3">{t.exampleDesc}</p>
-
-            <pre
-                class="bg-gray-900 text-gray-100 p-4 rounded-xl overflow-x-auto text-sm"><code>{`// task-renderer.ts
+        <h3 class="mt-6 text-[19px] font-bold">{t.exampleTitle}</h3>
+        <p class="text-base leading-relaxed text-muted">{t.exampleDesc}</p>
+        <pre class="code-block mt-1.5"><code>{`// task-renderer.ts
 import { createAstroRuntime } from "@casoon/fragment-renderer";
 import { ahaStackPreset } from "@casoon/fragment-renderer/presets/aha-stack";
 
@@ -208,40 +209,27 @@ const html = await runtime.renderToString({
   componentId: result.isCorrect ? "feedback-correct" : "feedback-incorrect",
   props: { locale, nextUrl, isComplete },
 });`}</code></pre>
-        </section>
 
         <!-- Task System -->
-        <section class="mb-10">
-            <h2 class="text-2xl font-bold text-purple-600 mb-4">
-                {t.taskSystemTitle}
-            </h2>
-            <p class="text-gray-700 mb-4">{t.taskSystemDesc}</p>
-
-            <ul class="space-y-2">
-                <li class="flex items-start gap-2">
-                    <span class="text-green-500 font-bold">•</span>
-                    <span class="text-gray-600">{t.taskS1}</span>
-                </li>
-                <li class="flex items-start gap-2">
-                    <span class="text-green-500 font-bold">•</span>
-                    <span class="text-gray-600">{t.taskS2}</span>
-                </li>
-                <li class="flex items-start gap-2">
-                    <span class="text-green-500 font-bold">•</span>
-                    <span class="text-gray-600">{t.taskS3}</span>
-                </li>
-                <li class="flex items-start gap-2">
-                    <span class="text-green-500 font-bold">•</span>
-                    <span class="text-gray-600">{t.taskS4}</span>
-                </li>
-                <li class="flex items-start gap-2">
-                    <span class="text-green-500 font-bold">•</span>
-                    <span class="text-gray-600">{t.taskS5}</span>
-                </li>
-            </ul>
-
-            <pre
-                class="bg-gray-900 text-gray-100 p-4 rounded-xl overflow-x-auto text-sm mt-6"><code>{`// Unified Task Interface
+        <h2 class="mt-8 text-[23px] font-bold">{t.taskSystemTitle}</h2>
+        <p class="text-base leading-relaxed text-ink-soft">
+            {t.taskSystemDesc}
+        </p>
+        <ul class="mt-1 flex flex-col gap-2.5">
+            {
+                [t.taskS1, t.taskS2, t.taskS3, t.taskS4, t.taskS5].map(
+                    (item) => (
+                        <li class="flex items-start gap-2.5">
+                            <span class="mt-2 block size-2 shrink-0 rounded-full bg-mark" />
+                            <span class="text-base leading-snug text-muted">
+                                {item}
+                            </span>
+                        </li>
+                    ),
+                )
+            }
+        </ul>
+        <pre class="code-block mt-5"><code>{`// Unified Task Interface
 interface TaskInstance {
   id: string;
   question: string;
@@ -255,47 +243,45 @@ const result = task.validate(userAnswer);
 if (!result.isCorrect) {
   console.log(result.hint);  // "Der kleine Zeiger zeigt die Stunde..."
 }`}</code></pre>
-        </section>
 
         <!-- Links -->
-        <section class="border-t-2 border-purple-100 pt-6">
-            <h2 class="text-xl font-bold text-purple-600 mb-4">
-                {t.linksTitle}
-            </h2>
-            <div class="flex flex-wrap gap-4">
-                <a
-                    href="https://insights.casoon.de/artikel/aha-stack-rechenkiste-fragment-renderer/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition-colors"
-                >
-                    {t.linkArticle}
-                </a>
-                <a
-                    href="https://www.casoon.de"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors"
-                >
-                    {t.linkCasoon}
-                </a>
-                <a
-                    href="https://github.com/casoon/rechenkiste"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                    {t.linkGithub}
-                </a>
-                <a
-                    href="https://www.npmjs.com/package/@casoon/fragment-renderer"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
-                >
-                    {t.linkNpm}
-                </a>
-            </div>
-        </section>
+        <h2 class="mt-8 border-t border-rule pt-6.5 text-[19px] font-bold">
+            {t.linksTitle}
+        </h2>
+        <div class="flex flex-wrap gap-2.5">
+            {
+                [
+                    {
+                        href: "https://insights.casoon.de/artikel/aha-stack-rechenkiste-fragment-renderer/",
+                        label: t.linkArticle,
+                    },
+                    { href: "https://www.casoon.de", label: t.linkCasoon },
+                    {
+                        href: "https://github.com/casoon/rechenkiste",
+                        label: t.linkGithub,
+                    },
+                    {
+                        href: "https://www.npmjs.com/package/@casoon/fragment-renderer",
+                        label: t.linkNpm,
+                    },
+                ].map((link) => (
+                    <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="inline-flex min-h-11 items-center rounded-[10px] border border-line bg-paper px-4 py-3 text-[15px] font-semibold text-ink transition-colors hover:border-mark"
+                    >
+                        {link.label}
+                    </a>
+                ))
+            }
+        </div>
+
+        <a
+            href={getLocalizedPath("/", locale)}
+            class="btn-secondary mt-6.5 inline-flex min-h-13 items-center self-start"
+        >
+            {translate(locale, "backToPractice")}
+        </a>
     </div>
 </BaseLayout>

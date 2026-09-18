@@ -279,7 +279,7 @@ export const compareSimple: TaskDefinition<NumberSenseData> = {
       category: this.category,
       grade: this.grade,
       locale,
-      question: `${a}  ___  ${b}\n${t.compareInstruction}`,
+      question: `${a}  __  ${b}\n${t.compareInstruction}`,
       inputType: "multiple-choice",
       choices,
       data: {
@@ -430,7 +430,7 @@ export const compareMedium: TaskDefinition<NumberSenseData> = {
       category: this.category,
       grade: this.grade,
       locale,
-      question: `${a}  ___  ${b}\n${t.compareInstruction}`,
+      question: `${a}  __  ${b}\n${t.compareInstruction}`,
       inputType: "multiple-choice",
       choices,
       data: {
