@@ -303,6 +303,7 @@ class CoordinateTask extends BaseTask<CoordinateData> {
 
     // Normalisiere Eingabe: "(3, 2)" oder "3,2" oder "3 2"
     const normalized = userAnswer
+      .trim()
       .replace(/[()]/g, "")
       .replace(/\s+/g, ",")
       .replace(/,+/g, ",")

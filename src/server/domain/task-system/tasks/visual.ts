@@ -373,14 +373,18 @@ class SymmetryTask extends BaseTask<SymmetryData> {
   validate(userAnswer: string): ValidationResult {
     const t = texts[this.locale] || texts.de;
 
-    // Multiple-Choice: userAnswer ist die Choice-ID (yes-xxx oder no-xxx)
+    // Multiple-Choice: userAnswer ist die Choice-ID (yes-xxx oder no-xxx).
+    // Alles andere ist keine Antwort und darf nicht als "nein" gelten.
     const userSaidYes = userAnswer.startsWith("yes-");
-    const isCorrect = userSaidYes === this.data.isSymmetric;
+    const userSaidNo = userAnswer.startsWith("no-");
+    const isCorrect = userSaidYes
+      ? this.data.isSymmetric
+      : userSaidNo && !this.data.isSymmetric;
 
     return {
       isCorrect,
       correctAnswer: this.data.isSymmetric ? t.yes : t.no,
-      userAnswer: userSaidYes ? t.yes : t.no,
+      userAnswer: userSaidYes ? t.yes : userSaidNo ? t.no : userAnswer,
       hint: isCorrect ? undefined : this.getHint(),
     };
   }

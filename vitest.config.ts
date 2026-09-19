@@ -7,6 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@domain": fromRoot("./src/server/domain"),
+      "@services": fromRoot("./src/server/services"),
       "@i18n": fromRoot("./src/i18n"),
     },
   },

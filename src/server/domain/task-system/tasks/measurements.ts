@@ -250,9 +250,12 @@ class MoneyTask extends BaseTask<MoneyData> {
     const parsed = parseFloat(normalized);
     const correctAnswer = this.data.answer;
 
-    // Vergleich mit Toleranz für Fließkomma-Ungenauigkeiten
-    // 7.60 und 7.6 sind gleich, ebenso 7,60 (wird zu 7.60)
-    const isCorrect = !isNaN(parsed) && Math.abs(parsed - correctAnswer) < 0.01;
+    // In ganzen Cent vergleichen. Eine Toleranz von 0.01 hätte einen Cent
+    // daneben durchgehen lassen: 5,25 + 5,10 ergibt intern 10.350000000000001,
+    // der Abstand zu 10,36 liegt damit knapp unter der Toleranz.
+    const isCorrect =
+      !isNaN(parsed) &&
+      Math.round(parsed * 100) === Math.round(correctAnswer * 100);
 
     return {
       isCorrect,
