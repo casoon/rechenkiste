@@ -1,4 +1,5 @@
 name = "rechenkiste"
+account_id = "817ec8f792eea2e272a0a6cf03ccb57d"
 main = "@astrojs/cloudflare/entrypoints/server"
 compatibility_date = "2025-11-28"
 compatibility_flags = ["nodejs_compat"]
