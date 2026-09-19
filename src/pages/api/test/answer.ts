@@ -11,17 +11,22 @@ import {
 import type { Locale } from "@i18n/translations";
 import { getLocalizedPath } from "@i18n/translations";
 import { renderFeedbackResponse } from "@services/task-renderer";
+import { composeRemainderAnswer } from "@services/answer-input";
 
 export const POST: APIRoute = async (context) => {
   const { request } = context;
   const formData = await request.formData();
 
-  const answer = formData.get("answer") as string;
+  const quotient = formData.get("answer") as string;
+  // Aufgaben mit Rest schicken zwei Felder — die Aufgabe erwartet "6 Rest 3"
+  const remainder = formData.get("remainder")?.toString() ?? null;
+  const answer =
+    remainder !== null ? composeRemainderAnswer(quotient, remainder) : quotient;
   const locale = (formData.get("locale") as Locale) || "de";
   const sessionId = formData.get("sessionId")?.toString() ?? null;
   const taskId = formData.get("taskId")?.toString() ?? null;
 
-  if (!answer) {
+  if (!quotient || (remainder !== null && !remainder.trim())) {
     return new Response("Bad Request", { status: 400 });
   }
 

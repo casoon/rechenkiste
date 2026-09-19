@@ -89,6 +89,41 @@ describe("test session", () => {
     ]);
   });
 
+  it("validates a restored task with the rules of its own task type", () => {
+    const testSession = session();
+    testSession.tasks[0] = {
+      id: "task-1",
+      typeId: "arithmetic-div-remainder",
+      question: "57 ÷ 9 = ? (mit Rest)",
+      correctAnswer: "6 Rest 3",
+      hint: "",
+      category: "arithmetic",
+      grade: 3,
+      locale: "de",
+      data: { dividend: 57, divisor: 9, quotient: 6, remainder: 3 },
+    };
+
+    const task = getCurrentTask(testSession);
+
+    // Der Quotient allein ist nicht die Antwort — der generische
+    // Zahlenvergleich hatte "6" durchgehen lassen
+    expect(task?.validate("6").isCorrect).toBe(false);
+    expect(task?.validate("6 Rest 3").isCorrect).toBe(true);
+    expect(task?.validate("6r3").isCorrect).toBe(true);
+    expect(task?.validate("6 Rest 4").isCorrect).toBe(false);
+    expect(task?.getCorrectAnswer()).toBe("6 Rest 3");
+    expect(task?.id).toBe("task-1");
+  });
+
+  it("falls back to the generic comparison for unknown task types", () => {
+    const testSession = session();
+
+    const task = getCurrentTask(testSession);
+
+    expect(task?.validate("1").isCorrect).toBe(true);
+    expect(task?.validate("2").isCorrect).toBe(false);
+  });
+
   it("rejects submissions for another session or a stale task", () => {
     const testSession = session();
 

@@ -807,30 +807,16 @@ interface DivisionWithRemainderData {
 
 class DivisionRemainderTask extends BaseTask<DivisionWithRemainderData> {
   validate(userAnswer: string): ValidationResult {
-    // Erwarte Format "X Rest Y" oder "X R Y" oder einfach "X"
-    const normalized = userAnswer.toLowerCase().trim();
+    const normalized = userAnswer.toLowerCase().trim().replace(/\s+/g, " ");
     const { quotient, remainder } = this.data;
 
-    // Prüfe verschiedene Formate
-    const formats = [
-      `${quotient} rest ${remainder}`,
-      `${quotient} r ${remainder}`,
-      `${quotient}r${remainder}`,
-      `${quotient} rest${remainder}`,
-    ];
+    // "6 Rest 3", "6 R 3", "6r3" — die Oberfläche schickt die erste Form,
+    // getippte Antworten dürfen die anderen benutzen
+    const parts = normalized.match(/^(\d+)\s*(?:rest|r)\s*(\d+)$/);
 
-    // Wenn kein Rest, akzeptiere auch nur die Zahl
-    if (remainder === 0 && normalized === String(quotient)) {
-      return {
-        isCorrect: true,
-        correctAnswer: `${quotient}`,
-        userAnswer: normalized,
-      };
-    }
-
-    const isCorrect =
-      formats.some((f) => normalized === f) ||
-      normalized === `${quotient} rest ${remainder}`;
+    const isCorrect = parts
+      ? Number(parts[1]) === quotient && Number(parts[2]) === remainder
+      : remainder === 0 && normalized === String(quotient);
 
     const correctAnswer =
       remainder > 0 ? `${quotient} Rest ${remainder}` : `${quotient}`;
@@ -846,9 +832,9 @@ class DivisionRemainderTask extends BaseTask<DivisionWithRemainderData> {
 
   getHint(): string {
     const hints: Record<string, string> = {
-      de: `Teile ${this.data.dividend} durch ${this.data.divisor}. Was bleibt übrig? Schreibe "X Rest Y"`,
-      en: `Divide ${this.data.dividend} by ${this.data.divisor}. What remains? Write "X Rest Y"`,
-      uk: `Поділи ${this.data.dividend} на ${this.data.divisor}. Що залишиться? Напиши "X Rest Y"`,
+      de: `Teile ${this.data.dividend} durch ${this.data.divisor}. Das Ergebnis kommt ins erste Feld, was übrig bleibt in das Feld "Rest".`,
+      en: `Divide ${this.data.dividend} by ${this.data.divisor}. The result goes in the first field, what is left over in the "Remainder" field.`,
+      uk: `Поділи ${this.data.dividend} на ${this.data.divisor}. Результат — у перше поле, те, що залишилось, — у поле "Остача".`,
     };
     return hints[this.locale] || hints.de;
   }

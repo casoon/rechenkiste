@@ -26,6 +26,8 @@ export const translations = {
     checkAnswer: "Antwort prüfen",
     nextTask: "Nächste Aufgabe",
     yourAnswer: "Deine Antwort",
+    answerQuotient: "Ergebnis",
+    answerRemainder: "Rest",
 
     // Feedback
     correct: "Super! Das ist richtig!",
@@ -130,6 +132,8 @@ export const translations = {
     checkAnswer: "Check Answer",
     nextTask: "Next Task",
     yourAnswer: "Your answer",
+    answerQuotient: "Result",
+    answerRemainder: "Remainder",
 
     // Feedback
     correct: "Great! That's correct!",
@@ -233,6 +237,8 @@ export const translations = {
     checkAnswer: "Перевірити відповідь",
     nextTask: "Наступне завдання",
     yourAnswer: "Твоя відповідь",
+    answerQuotient: "Результат",
+    answerRemainder: "Остача",
 
     // Відгук
     correct: "Чудово! Це правильно!",

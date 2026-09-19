@@ -284,17 +284,6 @@ const multiStepTemplates: Record<Locale, MultiStepTemplate[]> = {
  * Konkrete Textaufgabe
  */
 class WordProblemTask extends BaseTask<WordProblemData> {
-  private operation: "+" | "-" | "*" | "/" | "multi-step";
-
-  constructor(
-    params: ConstructorParameters<typeof BaseTask<WordProblemData>>[0] & {
-      operation: "+" | "-" | "*" | "/" | "multi-step";
-    },
-  ) {
-    super(params);
-    this.operation = params.operation;
-  }
-
   validate(userAnswer: string): ValidationResult {
     const parsed = this.parseNumericAnswer(userAnswer);
 
@@ -321,11 +310,11 @@ class WordProblemTask extends BaseTask<WordProblemData> {
   getHint(): string {
     const h = hints[this.locale] || hints.de;
 
-    if (this.operation === "multi-step") {
+    if (this.data.operation === "multi-step") {
       return h.multiStep;
     }
 
-    switch (this.operation) {
+    switch (this.data.operation) {
       case "+":
         return h.addition;
       case "-":
@@ -368,8 +357,7 @@ export const simpleWordProblemAddition: TaskDefinition<WordProblemData> = {
       grade: this.grade,
       locale,
       question: story,
-      data: { story, answer },
-      operation: "+",
+      data: { story, answer, operation: "+" },
     });
   },
 };
@@ -396,8 +384,7 @@ export const simpleWordProblemSubtraction: TaskDefinition<WordProblemData> = {
       grade: this.grade,
       locale,
       question: story,
-      data: { story, answer },
-      operation: "-",
+      data: { story, answer, operation: "-" },
     });
   },
 };
@@ -425,8 +412,7 @@ export const simpleWordProblemMultiplication: TaskDefinition<WordProblemData> =
         grade: this.grade,
         locale,
         question: story,
-        data: { story, answer },
-        operation: "*",
+        data: { story, answer, operation: "*" },
       });
     },
   };
@@ -453,8 +439,7 @@ export const simpleWordProblemDivision: TaskDefinition<WordProblemData> = {
       grade: this.grade,
       locale,
       question: story,
-      data: { story, answer },
-      operation: "/",
+      data: { story, answer, operation: "/" },
     });
   },
 };
@@ -487,8 +472,7 @@ export const multiStepWordProblem: TaskDefinition<WordProblemData> = {
       grade: this.grade,
       locale,
       question: story,
-      data: { story, answer, steps },
-      operation: "multi-step",
+      data: { story, answer, steps, operation: "multi-step" },
     });
   },
 };
