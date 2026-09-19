@@ -1,0 +1,28 @@
+---
+import AnswerFields from "@fragments/AnswerFields.astro";
+import { t } from "@i18n/translations";
+import type { Locale } from "@i18n/translations";
+
+interface Props {
+    locale: Locale;
+    sessionId: string;
+    taskId: string;
+}
+
+const { locale, sessionId, taskId } = Astro.props;
+---
+
+<form
+    id="answer-form"
+    hx-post="/api/test/answer"
+    hx-target="#feedback-container"
+    hx-swap="innerHTML"
+    hx-disabled-elt="find button[type='submit']"
+    class="mt-6 flex flex-col gap-5"
+>
+    <AnswerFields sessionId={sessionId} locale={locale} taskId={taskId} />
+    <slot />
+    <button type="submit" class="btn-check">{t(locale, "checkAnswer")}</button>
+</form>
+
+<div id="feedback-container" class="mt-6 empty:mt-0"></div>

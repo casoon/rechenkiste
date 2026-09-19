@@ -1,160 +1,129 @@
 ---
-import type { TaskInstance } from "@domain/task-system";
-import type { Locale } from "@i18n/translations";
+import QuestionBlock from "@fragments/QuestionBlock.astro";
+import AnswerFields from "@fragments/AnswerFields.astro";
 import { t } from "@i18n/translations";
+import type { Locale } from "@i18n/translations";
+import type { DragDropItem, DragDropTarget } from "@domain/task-system";
 
 interface Props {
-    task: TaskInstance;
     locale: Locale;
     sessionId: string;
+    taskId: string;
+    questionHtml: string;
+    dragItems: DragDropItem[];
+    dropTargets: DragDropTarget[];
 }
 
-const { task, locale, sessionId } = Astro.props;
-const dragItems = task.dragItems || [];
-const dropTargets = task.dropTargets || [];
----
+const { locale, sessionId, taskId, questionHtml, dragItems, dropTargets } =
+    Astro.props;
 
-<div class="slide-up">
-    <div class="task-question">
-        <span class="text-gray-500 text-xl block mb-2"
-            >{t(locale, "matchItems")}</span
-        >
-        <span
-            class="text-2xl md:text-3xl font-bold"
-            set:html={task.question.replace(/\n/g, "<br>")}
-        />
-    </div>
-</div>
-
-<div
-    id="drag-drop-container"
-    class="mt-8"
-    x-data={`{
+const state = `{
     items: ${JSON.stringify(dragItems)},
     targets: ${JSON.stringify(dropTargets)},
     assignments: {},
     dragging: null,
-
-    startDrag(itemId) {
-      this.dragging = itemId;
-    },
-
-    endDrag() {
-      this.dragging = null;
-    },
-
+    startDrag(itemId) { this.dragging = itemId; },
+    endDrag() { this.dragging = null; },
     dropOnTarget(targetId) {
       if (this.dragging) {
-        // Remove from previous target
         Object.keys(this.assignments).forEach(key => {
-          if (this.assignments[key] === this.dragging) {
-            delete this.assignments[key];
-          }
+          if (this.assignments[key] === this.dragging) delete this.assignments[key];
         });
-        // Assign to new target
         this.assignments[targetId] = this.dragging;
         this.dragging = null;
       }
     },
-
-    removeFromTarget(targetId) {
-      delete this.assignments[targetId];
-    },
-
+    removeFromTarget(targetId) { delete this.assignments[targetId]; },
     getItemInTarget(targetId) {
       const itemId = this.assignments[targetId];
       if (!itemId) return null;
       return this.items.find(i => i.id === itemId);
     },
-
-    isItemAssigned(itemId) {
-      return Object.values(this.assignments).includes(itemId);
-    },
-
+    isItemAssigned(itemId) { return Object.values(this.assignments).includes(itemId); },
     getAnswer() {
-      // Convert {targetId: itemId} to {itemId: targetId}
       const answer = {};
       Object.entries(this.assignments).forEach(([targetId, itemId]) => {
         answer[itemId] = targetId;
       });
       return JSON.stringify(answer);
     },
+    isComplete() { return Object.keys(this.assignments).length === this.items.length; }
+  }`;
+---
 
-    isComplete() {
-      return Object.keys(this.assignments).length === this.items.length;
-    }
-  }`}
->
-    <!-- Drag Items -->
-    <div
-        class="flex flex-wrap gap-3 mb-6 p-4 bg-gray-100 rounded-xl min-h-15"
-    >
+<QuestionBlock prompt={t(locale, "matchItems")}>
+    <span class="text-[32px] leading-tight font-bold" set:html={questionHtml} />
+    <span class="text-base leading-relaxed text-muted">
+        {t(locale, "matchInstructions")}
+    </span>
+</QuestionBlock>
+
+<div id="drag-drop-container" class="mt-6 flex flex-col gap-4.5" x-data={state}>
+    <div class="flex min-h-16 flex-wrap items-center gap-2.5">
         <template x-for="item in items" :key="item.id">
-            <div
+            <button
+                type="button"
                 x-show="!isItemAssigned(item.id)"
-                class="drag-item px-4 py-2 bg-white rounded-lg border-2 border-gray-300 cursor-grab text-xl font-semibold shadow-sm hover:shadow-md transition-shadow"
-                :class="dragging === item.id && 'opacity-50 border-emerald-500'"
+                class="drag-item min-h-15 cursor-grab rounded-xl border-2 border-ink bg-white px-5.5 py-3.5 text-2xl font-bold text-ink"
+                :class="dragging === item.id && 'bg-field opacity-60'"
+                :aria-pressed="dragging === item.id"
                 draggable="true"
-                @dragstart="startDrag(item.id)"
-                @dragend="endDrag()"
-                @touchstart="startDrag(item.id)"
-                @click="startDrag(item.id)"
-                x-text="item.content"
-            >
-            </div>
+                x-on:dragstart="startDrag(item.id)"
+                x-on:dragend="endDrag()"
+                x-on:touchstart="startDrag(item.id)"
+                x-on:click="startDrag(item.id)"
+                x-text="item.content"></button>
         </template>
         <div
             x-show="items.every(i => isItemAssigned(i.id))"
-            class="text-gray-400 italic"
+            class="text-muted"
         >
-            Alle Elemente zugeordnet
+            {t(locale, "allItemsAssigned")}
         </div>
     </div>
 
-    <!-- Drop Targets -->
-    <div class="grid grid-cols-2 gap-4">
+    <div class="flex items-center gap-2.5">
+        <span class="block h-0.5 flex-1 bg-grid"></span>
+        <span class="text-sm text-muted">{t(locale, "matchInstructions")}</span>
+        <span class="block h-0.5 flex-1 bg-grid"></span>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
         <template x-for="target in targets" :key="target.id">
-            <div
-                class="drop-target p-4 rounded-xl border-2 border-dashed min-h-20 flex flex-col items-center justify-center transition-colors"
-                :class="dragging ? 'border-emerald-400 bg-emerald-50' : 'border-gray-300 bg-gray-50'"
-                @dragover.prevent
-                @drop="dropOnTarget(target.id)"
-                @click="dragging && dropOnTarget(target.id)"
+            <button
+                type="button"
+                class="drop-target flex min-h-20 flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-4 transition-colors"
+                :class="getItemInTarget(target.id) ? 'border-ink bg-white' : 'border-faint bg-field'"
+                x-on:dragover.prevent
+                x-on:drop="dropOnTarget(target.id)"
+                x-on:click="dragging ? dropOnTarget(target.id) : getItemInTarget(target.id) && removeFromTarget(target.id)"
             >
-                <span class="text-sm text-gray-500 mb-2" x-text="target.label"
-                ></span>
+                <span class="text-sm text-muted" x-text="target.label"></span>
                 <template x-if="getItemInTarget(target.id)">
-                    <div
-                        class="px-4 py-2 bg-emerald-100 rounded-lg border-2 border-emerald-400 text-xl font-semibold cursor-pointer hover:bg-red-100 hover:border-red-400 transition-colors"
-                        @click.stop="removeFromTarget(target.id)"
+                    <span
+                        class="text-2xl font-bold text-ink"
                         x-text="getItemInTarget(target.id)?.content"
-                        title="Klicken zum Entfernen"
-                    >
-                    </div>
+                        title={t(locale, "removeAssignment")}></span>
                 </template>
                 <template x-if="!getItemInTarget(target.id)">
-                    <span class="text-gray-400">—</span>
+                    <span class="text-2xl text-faint">-</span>
                 </template>
-            </div>
+            </button>
         </template>
     </div>
 
-    <!-- Submit Form -->
     <form
         id="answer-form"
         hx-post="/api/test/answer"
         hx-target="#feedback-container"
         hx-swap="innerHTML"
-        class="mt-6"
+        hx-disabled-elt="find button[type='submit']"
     >
-        <input type="hidden" name="sessionId" value={sessionId} />
-        <input type="hidden" name="locale" value={locale} />
-        <input type="hidden" name="taskId" value={task.id} />
+        <AnswerFields sessionId={sessionId} locale={locale} taskId={taskId} />
         <input type="hidden" name="answer" :value="getAnswer()" />
-
         <button
             type="submit"
-            class="btn-success w-full"
+            class="btn-check"
             :disabled="!isComplete()"
             :class="!isComplete() && 'opacity-50 cursor-not-allowed'"
         >
@@ -163,19 +132,4 @@ const dropTargets = task.dropTargets || [];
     </form>
 </div>
 
-<div id="feedback-container" class="mt-6"></div>
-
-<style>
-    .drag-item {
-        user-select: none;
-        touch-action: none;
-    }
-
-    .drag-item:active {
-        cursor: grabbing;
-    }
-
-    .drop-target {
-        transition: all 0.2s ease;
-    }
-</style>
+<div id="feedback-container" class="mt-6 empty:mt-0"></div>

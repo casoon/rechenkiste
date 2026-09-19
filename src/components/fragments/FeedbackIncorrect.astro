@@ -1,10 +1,10 @@
 ---
-import type { Locale } from "@i18n/translations";
 import { t } from "@i18n/translations";
+import type { Locale } from "@i18n/translations";
 
 interface Props {
     locale: Locale;
-    correctAnswer: number | string;
+    correctAnswer: string | number;
     hint?: string;
     explanation?: string;
     nextUrl: string;
@@ -13,80 +13,55 @@ interface Props {
 
 const { locale, correctAnswer, hint, explanation, nextUrl, isComplete } =
     Astro.props;
+
+const actionClass =
+    "min-h-13 self-start rounded-xl bg-mark px-5.5 py-3.5 text-[17px] font-bold text-white transition-colors hover:bg-mark-dark";
 ---
 
-<div class="feedback-incorrect bounce-in">
-    <div class="text-4xl mb-2">😅</div>
-    <p class="text-xl font-bold">{t(locale, "incorrect")}</p>
-    <p class="mt-2 text-lg">
+<div class="feedback-incorrect flex flex-col gap-3 slide-up">
+    <div class="flex items-center gap-3">
+        <span class="block size-6.5 shrink-0 rounded-full bg-mark"></span>
+        <span class="text-[22px] font-bold">{t(locale, "incorrect")}</span>
+    </div>
+
+    <span class="text-base leading-relaxed">
         {t(locale, "correctAnswerIs", { answer: correctAnswer })}
-    </p>
+    </span>
 
     {
         hint && (
-            <div class="mt-4 p-3 bg-yellow-100/80 rounded-lg text-left">
-                <p class="text-sm text-yellow-800">
-                    <span class="font-semibold">💡 {t(locale, "hint")}:</span>{" "}
-                    {hint}
-                </p>
+            <div class="rounded-xl border border-line bg-white/70 p-3.5 text-left text-[15px] leading-relaxed">
+                <span class="font-semibold">{t(locale, "hint")}:</span> {hint}
             </div>
         )
     }
 
     {
         explanation && (
-            <div class="mt-3 p-3 bg-blue-100/80 rounded-lg text-left">
-                <p class="font-semibold text-blue-900 mb-1">
+            <div class="rounded-xl border border-line bg-white/70 p-3.5 text-left text-[15px] leading-relaxed">
+                <span class="mb-1 block font-semibold">
                     {t(locale, "solution")}:
-                </p>
-                <p class="text-sm text-blue-800 whitespace-pre-line">
-                    {explanation}
-                </p>
+                </span>
+                <span class="whitespace-pre-line">{explanation}</span>
             </div>
         )
     }
 
-    <div class="mt-6">
-        {
-            isComplete ? (
-                <a
-                    href={nextUrl}
-                    class="btn-primary w-full inline-block text-center"
-                >
-                    {t(locale, "showResult")} →
-                </a>
-            ) : (
-                <button
-                    type="button"
-                    class="btn-primary w-full"
-                    hx-get={`/api/test/task?locale=${locale}`}
-                    hx-target="#task-container"
-                    hx-swap="innerHTML"
-                >
-                    {t(locale, "nextTask")} →
-                </button>
-            )
-        }
-    </div>
+    {
+        isComplete ? (
+            <a href={nextUrl} class={actionClass}>
+                {t(locale, "showResult")}
+            </a>
+        ) : (
+            <button
+                type="button"
+                class={actionClass}
+                hx-get={`/api/test/task?locale=${locale}`}
+                hx-target="#task-container"
+                hx-swap="innerHTML"
+            >
+                {t(locale, "nextTask")}
+            </button>
+        )
+    }
 </div>
-
-<style>
-    .feedback-incorrect {
-        animation: shake 0.5s ease-in-out;
-    }
-
-    @keyframes shake {
-        0%,
-        100% {
-            transform: translateX(0);
-        }
-        20%,
-        60% {
-            transform: translateX(-5px);
-        }
-        40%,
-        80% {
-            transform: translateX(5px);
-        }
-    }
-</style>

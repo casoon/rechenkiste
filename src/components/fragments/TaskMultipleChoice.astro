@@ -1,65 +1,67 @@
 ---
-import type { TaskInstance, ChoiceOption } from "@domain/task-system";
-import type { Locale } from "@i18n/translations";
+import QuestionBlock from "@fragments/QuestionBlock.astro";
+import AnswerFields from "@fragments/AnswerFields.astro";
 import { t } from "@i18n/translations";
+import type { Locale } from "@i18n/translations";
+import type { ChoiceOption } from "@domain/task-system";
 
 interface Props {
-  task: TaskInstance;
-  locale: Locale;
-  sessionId: string;
+    locale: Locale;
+    sessionId: string;
+    taskId: string;
+    questionHtml: string;
+    choices: ChoiceOption[];
 }
 
-const { task, locale, sessionId } = Astro.props;
-const choices = task.choices || [];
+const { locale, sessionId, taskId, questionHtml, choices } = Astro.props;
+
+// Drei Antworten (z. B. < > =) passen in eine Reihe, sonst zwei Spalten
+const columns = choices.length === 3 ? "grid-cols-3" : "grid-cols-2";
 ---
 
-<div class="slide-up">
-  <div class="task-question">
-    <span class="text-3xl md:text-4xl font-bold" set:html={task.question.replace(/\n/g, "<br>")} />
-  </div>
-</div>
+<QuestionBlock>
+    <span
+        class="text-[40px] leading-[1.15] font-bold tracking-[-.01em]"
+        set:html={questionHtml}
+    />
+</QuestionBlock>
 
 <form
-  id="answer-form"
-  hx-post="/api/test/answer"
-  hx-target="#feedback-container"
-  hx-swap="innerHTML"
-  class="mt-8 space-y-4"
-  x-data="{ selected: '' }"
+    id="answer-form"
+    hx-post="/api/test/answer"
+    hx-target="#feedback-container"
+    hx-swap="innerHTML"
+    hx-disabled-elt="find button[type='submit']"
+    class="mt-6 flex flex-col gap-5"
+    x-data="{ selected: '' }"
 >
-  <input type="hidden" name="sessionId" value={sessionId} />
-  <input type="hidden" name="locale" value={locale} />
-  <input type="hidden" name="taskId" value={task.id} />
-  <input type="hidden" name="answer" x-model="selected" />
+    <AnswerFields sessionId={sessionId} locale={locale} taskId={taskId} />
+    <input type="hidden" name="answer" x-model="selected" />
 
-  <div class="grid grid-cols-2 gap-3">
-    {choices.map((choice: ChoiceOption) => (
-      <button
-        type="button"
-        class="choice-button p-4 text-2xl font-bold rounded-xl border-2 transition-all duration-200"
-        :class={`selected === '${choice.id}' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'`}
-        @click={`selected = '${choice.id}'`}
-      >
-        {choice.label}
-      </button>
-    ))}
-  </div>
+    <div class:list={["grid gap-3", columns]}>
+        {
+            choices.map((choice) => (
+                <button
+                    type="button"
+                    class="choice-button min-h-[82px] w-full rounded-[14px] border-2 px-2 py-5 text-[30px] font-bold transition-colors"
+                    :class={`selected === '${choice.id}' ? 'border-ink bg-ink text-white' : 'border-line bg-white text-ink hover:border-ink'`}
+                    :aria-pressed={`selected === '${choice.id}'`}
+                    x-on:click={`selected = '${choice.id}'`}
+                >
+                    {choice.label}
+                </button>
+            ))
+        }
+    </div>
 
-  <button
-    type="submit"
-    class="btn-success w-full mt-6"
-    :disabled="!selected"
-    :class="!selected && 'opacity-50 cursor-not-allowed'"
-  >
-    {t(locale, "checkAnswer")}
-  </button>
+    <button
+        type="submit"
+        class="btn-check"
+        :disabled="!selected"
+        :class="!selected && 'opacity-50 cursor-not-allowed'"
+    >
+        {t(locale, "checkAnswer")}
+    </button>
 </form>
 
-<div id="feedback-container" class="mt-6"></div>
-
-<style>
-  .choice-button:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
-  }
-</style>
+<div id="feedback-container" class="mt-6 empty:mt-0"></div>

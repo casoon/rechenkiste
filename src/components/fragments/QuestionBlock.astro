@@ -1,0 +1,16 @@
+---
+interface Props {
+    prompt?: string;
+}
+
+const { prompt } = Astro.props;
+---
+
+<div id="speak-task" class="flex flex-col gap-3 slide-up">
+    {
+        prompt && (
+            <span class="text-base leading-relaxed text-muted">{prompt}</span>
+        )
+    }
+    <slot />
+</div>

@@ -1,0 +1,101 @@
+---
+import { t } from "@i18n/translations";
+import type { Locale } from "@i18n/translations";
+import type { AnswerInputMode } from "@services/answer-input";
+
+interface Props {
+    locale: Locale;
+    inputLabel?: string;
+    /** Ziffernblock, wenn eine reine Zahl erwartet wird — sonst Textfeld */
+    numpad: boolean;
+    inputmode: AnswerInputMode;
+    /** Zeichen, die beim Tippen verworfen werden */
+    pattern: string;
+}
+
+const { locale, inputLabel, numpad, inputmode, pattern } = Astro.props;
+const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+---
+
+{
+    numpad ? (
+        <div
+            x-data="{
+                v: '',
+                push(d) { if (this.v.length < 8) this.v += d; },
+                clear() { this.v = ''; },
+                back() { this.v = this.v.slice(0, -1); }
+            }"
+            class="flex flex-col gap-3.5"
+        >
+            <label for="answer" class="sr-only">
+                {t(locale, "yourAnswer")}
+            </label>
+            <div class="flex min-h-17 items-center gap-3 rounded-xl border-2 border-ink bg-field px-4.5 py-3">
+                <input
+                    type="text"
+                    id="answer"
+                    name="answer"
+                    x-model="v"
+                    class="min-w-0 flex-1 border-0 bg-transparent text-[32px] font-bold text-ink outline-none placeholder:text-[20px] placeholder:font-normal placeholder:text-faint"
+                    placeholder={t(locale, "yourAnswer")}
+                    autocomplete="off"
+                    inputmode="none"
+                    required
+                    autofocus
+                />
+                {inputLabel && (
+                    <span class="text-xl font-semibold text-muted">
+                        {inputLabel}
+                    </span>
+                )}
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+                {digits.map((digit) => (
+                    <button
+                        type="button"
+                        class="key"
+                        x-on:click={`push('${digit}')`}
+                    >
+                        {digit}
+                    </button>
+                ))}
+                <button type="button" class="key-alt" x-on:click="clear()">
+                    {t(locale, "keyClear")}
+                </button>
+                <button type="button" class="key" x-on:click="push('0')">
+                    0
+                </button>
+                <button type="button" class="key-alt" x-on:click="back()">
+                    {t(locale, "keyBack")}
+                </button>
+            </div>
+        </div>
+    ) : (
+        <div>
+            <label for="answer" class="sr-only">
+                {t(locale, "yourAnswer")}
+            </label>
+            <div class="flex items-center gap-3">
+                <input
+                    type="text"
+                    id="answer"
+                    name="answer"
+                    class="input-field flex-1"
+                    placeholder={t(locale, "yourAnswer")}
+                    autocomplete="off"
+                    inputmode={inputmode}
+                    required
+                    autofocus
+                    x-data={`{ pattern: ${JSON.stringify(pattern)} }`}
+                    x-on:input="$el.value = $el.value.replace(new RegExp(pattern, 'g'), '')"
+                />
+                {inputLabel && (
+                    <span class="text-xl font-semibold text-muted">
+                        {inputLabel}
+                    </span>
+                )}
+            </div>
+        </div>
+    )
+}

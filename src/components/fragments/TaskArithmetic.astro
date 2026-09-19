@@ -1,130 +1,54 @@
 ---
-import type { TaskInstance, ArithmeticData } from "@domain/task-system";
+import QuestionBlock from "@fragments/QuestionBlock.astro";
+import AnswerForm from "@fragments/AnswerForm.astro";
+import AnswerInput from "@fragments/AnswerInput.astro";
 import type { Locale } from "@i18n/translations";
-import { t } from "@i18n/translations";
+import type { AnswerInputConfig } from "@services/answer-input";
 
 interface Props {
-    task: TaskInstance<ArithmeticData>;
     locale: Locale;
     sessionId: string;
+    taskId: string;
+    question: string;
+    svg: string;
+    text: string;
+    inputLabel?: string;
+    answerInput: AnswerInputConfig;
 }
 
-const { task, locale, sessionId } = Astro.props;
-
-// Prüfe ob die Frage SVG enthält
-const hasSvg = task.question.includes("<svg");
-
-// Prüfe ob Uhrzeit-Eingabe erwartet wird
-const needsTimeInput =
-    task.typeId?.includes("clock") ||
-    task.typeId?.includes("time") ||
-    task.question.toLowerCase().includes("wie spät") ||
-    task.question.toLowerCase().includes("uhrzeit") ||
-    task.question.toLowerCase().includes("what time");
-
-// Prüfe ob Dezimal-Eingabe erwartet wird
-const needsDecimalInput =
-    !needsTimeInput &&
-    (task.typeId?.includes("to-decimal") || // "Bruch als Dezimalzahl"
-        task.typeId?.includes("decimal") || // Dezimalzahlen-Aufgaben
-        task.question.toLowerCase().includes("dezimalzahl"));
-
-// Prüfe ob Bruch-Eingabe nötig ist (Antwort enthält /)
-const needsFractionInput =
-    !needsDecimalInput &&
-    !needsTimeInput &&
-    (task.question.includes("/") || // Brüche wie 1/5
-        task.typeId?.includes("fraction") ||
-        task.typeId === "percent-identify"); // "Was ist X% als Bruch?"
-
-// Erlaubte Zeichen für die Eingabe als Regex-Pattern
-// Uhrzeiten: 0-9 und :
-// Brüche: nur 0-9 und /
-// Zahlen: 0-9, Komma, Punkt, Minus
-const allowedCharsRegex = needsTimeInput
-    ? /[^0-9:]/g
-    : needsFractionInput
-      ? /[^0-9/]/g
-      : /[^0-9,.\-]/g;
-
-// Trenne SVG vom Text wenn vorhanden
-let svgPart = "";
-let textPart = task.question;
-
-if (hasSvg) {
-    const svgMatch = task.question.match(/<svg[\s\S]*?<\/svg>/);
-    if (svgMatch) {
-        svgPart = svgMatch[0];
-        textPart = task.question.replace(svgPart, "").trim();
-    }
-}
+const {
+    locale,
+    sessionId,
+    taskId,
+    question,
+    svg,
+    text,
+    inputLabel,
+    answerInput,
+} = Astro.props;
 ---
 
-<div class="slide-up">
-    <div class="task-question">
-        {
-            hasSvg && svgPart && (
-                <div class="bg-white/80 rounded-xl p-4 mb-4">
-                    <Fragment set:html={svgPart} />
+<QuestionBlock>
+    {
+        svg ? (
+            <>
+                <div class="rounded-xl border border-line bg-field p-4">
+                    <Fragment set:html={svg} />
                 </div>
-            )
-        }
-        {
-            hasSvg ? (
-                <p class="text-xl md:text-2xl whitespace-pre-line">
-                    {textPart}
-                </p>
-            ) : (
-                <span class="text-4xl md:text-5xl font-bold whitespace-pre-line">
-                    {task.question}
+                <span class="text-2xl leading-snug font-semibold whitespace-pre-line">
+                    {text}
                 </span>
-            )
-        }
-    </div>
-</div>
+            </>
+        ) : (
+            <span
+                class="text-[40px] leading-[1.15] font-bold tracking-[-.01em] whitespace-pre-line"
+            >
+                {question}
+            </span>
+        )
+    }
+</QuestionBlock>
 
-<form
-    id="answer-form"
-    hx-post="/api/test/answer"
-    hx-target="#feedback-container"
-    hx-swap="innerHTML"
-    class="mt-8 space-y-6"
->
-    <input type="hidden" name="sessionId" value={sessionId} />
-    <input type="hidden" name="locale" value={locale} />
-    <input type="hidden" name="taskId" value={task.id} />
-
-    <div>
-        <label for="answer" class="sr-only">
-            {t(locale, "yourAnswer")}
-        </label>
-        <div class="flex items-center gap-3">
-            <input
-                type="text"
-                id="answer"
-                name="answer"
-                class="input-field flex-1"
-                placeholder={t(locale, "yourAnswer")}
-                autocomplete="off"
-                inputmode={needsFractionInput ? "text" : "decimal"}
-                required
-                autofocus
-                x-data={`{ pattern: ${JSON.stringify(allowedCharsRegex.source)} }`}
-                x-on:input="$el.value = $el.value.replace(new RegExp(pattern, 'g'), '')"
-            />
-            {
-                task.inputLabel && (
-                    <span class="text-2xl font-semibold text-gray-700">
-                        {task.inputLabel}
-                    </span>
-                )
-            }
-        </div>
-    </div>
-
-    <button type="submit" class="btn-success w-full">
-        {t(locale, "checkAnswer")}
-    </button>
-</form>
-
-<div id="feedback-container" class="mt-6"></div>
+<AnswerForm locale={locale} sessionId={sessionId} taskId={taskId}>
+    <AnswerInput locale={locale} inputLabel={inputLabel} {...answerInput} />
+</AnswerForm>

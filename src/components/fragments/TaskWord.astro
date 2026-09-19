@@ -1,36 +1,26 @@
 ---
-import type { TaskInstance, WordProblemData } from "@domain/task-system";
-import type { Locale } from "@i18n/translations";
+import QuestionBlock from "@fragments/QuestionBlock.astro";
+import AnswerForm from "@fragments/AnswerForm.astro";
 import { t } from "@i18n/translations";
+import type { Locale } from "@i18n/translations";
 
 interface Props {
-    task: TaskInstance<WordProblemData>;
     locale: Locale;
     sessionId: string;
+    taskId: string;
+    story: string;
 }
 
-const { task, locale, sessionId } = Astro.props;
+const { locale, sessionId, taskId, story } = Astro.props;
 ---
 
-<div class="slide-up">
-    <div class="task-question">
-        <div class="bg-white/60 rounded-xl p-6 mb-4 text-left">
-            <p class="text-xl md:text-2xl leading-relaxed">{task.data.story}</p>
-        </div>
-    </div>
-</div>
+<QuestionBlock prompt={t(locale, "wordProblem")}>
+    <p class="rounded-xl border border-line bg-field p-5 text-xl leading-relaxed">
+        {story}
+    </p>
+</QuestionBlock>
 
-<form
-    id="answer-form"
-    hx-post="/api/test/answer"
-    hx-target="#feedback-container"
-    hx-swap="innerHTML"
-    class="mt-6 space-y-6"
->
-    <input type="hidden" name="sessionId" value={sessionId} />
-    <input type="hidden" name="locale" value={locale} />
-    <input type="hidden" name="taskId" value={task.id} />
-
+<AnswerForm locale={locale} sessionId={sessionId} taskId={taskId}>
     <div>
         <label for="answer" class="sr-only">{t(locale, "yourAnswer")}</label>
         <input
@@ -45,10 +35,4 @@ const { task, locale, sessionId } = Astro.props;
             autofocus
         />
     </div>
-
-    <button type="submit" class="btn-success w-full">
-        {t(locale, "checkAnswer")}
-    </button>
-</form>
-
-<div id="feedback-container" class="mt-6"></div>
+</AnswerForm>
