@@ -196,19 +196,25 @@ const t = content[locale];
 import { createAstroRuntime } from "@casoon/fragment-renderer";
 import { ahaStackPreset } from "@casoon/fragment-renderer/presets/aha-stack";
 
+// One runtime per locale, cached - not rebuilt per request
 const runtime = createAstroRuntime({
   ...ahaStackPreset({ locale, htmxHeaders: true }),
   components: [
-    { id: "feedback-correct", loader: () => import("./FeedbackCorrect.astro") },
-    { id: "feedback-incorrect", loader: () => import("./FeedbackIncorrect.astro") },
+    { id: "feedback-correct", loader: () => import("@fragments/FeedbackCorrect.astro") },
+    { id: "feedback-incorrect", loader: () => import("@fragments/FeedbackIncorrect.astro") },
   ],
 });
 
-// Render feedback as HTML fragment
-const html = await runtime.renderToString({
-  componentId: result.isCorrect ? "feedback-correct" : "feedback-incorrect",
-  props: { locale, nextUrl, isComplete },
-});`}</code></pre>
+// Render feedback as an HTML fragment
+const html = result.isCorrect
+  ? await runtime.renderToString({
+      componentId: "feedback-correct",
+      props: { locale, nextUrl, isComplete, delayMs },
+    })
+  : await runtime.renderToString({
+      componentId: "feedback-incorrect",
+      props: { locale, correctAnswer, hint, nextUrl, isComplete },
+    });`}</code></pre>
 
         <!-- Task System -->
         <h2 class="mt-8 text-[23px] font-bold">{t.taskSystemTitle}</h2>
