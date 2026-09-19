@@ -16,6 +16,7 @@ import {
   type DragDropItem,
   type DragDropTarget,
   initTaskSystem,
+  rehydrateTask,
   taskGenerator,
   taskRegistry,
 } from "@domain/task-system";
@@ -109,6 +110,25 @@ function serializeTask(task: TaskInstance): SerializedTask {
 
 // Erstellt eine TaskInstance aus serialisierten Daten
 function deserializeTask(data: SerializedTask): TaskInstance {
+  // Erst die echte Aufgabenklasse versuchen: nur sie kennt die Regeln ihres
+  // Aufgabentyps. Der generische Vergleich unten ist der Notnagel für Typen,
+  // die sich nicht rekonstruieren lassen.
+  const rehydrated = rehydrateTask({
+    id: data.id,
+    typeId: data.typeId,
+    category: data.category,
+    grade: data.grade,
+    locale: data.locale,
+    question: data.question,
+    data: data.data,
+    inputType: data.inputType,
+    inputLabel: data.inputLabel,
+    choices: data.choices,
+    dragItems: data.dragItems,
+    dropTargets: data.dropTargets,
+  });
+  if (rehydrated) return rehydrated;
+
   return {
     id: data.id,
     typeId: data.typeId,

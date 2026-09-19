@@ -51,6 +51,9 @@ export type {
   NumberSenseData,
 } from "./base-task";
 
+// Wiederherstellung aus der Session
+export { rehydrateTask } from "./rehydrate";
+
 // Task Definitions
 export { registerAllTasks, allTaskDefinitions } from "./tasks";
 

@@ -11,9 +11,18 @@ interface Props {
     inputmode: AnswerInputMode;
     /** Zeichen, die beim Tippen verworfen werden */
     pattern: string;
+    /** Zwei Felder "Ergebnis" und "Rest" statt einem */
+    remainder?: boolean;
 }
 
-const { locale, inputLabel, numpad, inputmode, pattern } = Astro.props;
+const {
+    locale,
+    inputLabel,
+    numpad,
+    inputmode,
+    pattern,
+    remainder = false,
+} = Astro.props;
 const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 ---
 
@@ -21,35 +30,101 @@ const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     numpad ? (
         <div
             x-data="{
-                v: '',
-                push(d) { if (this.v.length < 8) this.v += d; },
-                clear() { this.v = ''; },
-                back() { this.v = this.v.slice(0, -1); }
+                aktiv: 'quotient',
+                feld() { return this.$refs[this.aktiv]; },
+                schreib(wert) {
+                    const feld = this.feld();
+                    feld.value = wert;
+                    feld.dispatchEvent(new Event('input', { bubbles: true }));
+                    feld.focus({ preventScroll: true });
+                    const ende = feld.value.length;
+                    feld.setSelectionRange(ende, ende);
+                },
+                push(d) {
+                    const feld = this.feld();
+                    if (feld.value.length < feld.maxLength) this.schreib(feld.value + d);
+                    else feld.focus({ preventScroll: true });
+                },
+                clear() { this.schreib(''); },
+                back() { this.schreib(this.feld().value.slice(0, -1)); }
             }"
             class="flex flex-col gap-3.5"
         >
-            <label for="answer" class="sr-only">
-                {t(locale, "yourAnswer")}
-            </label>
-            <div class="flex min-h-17 items-center gap-3 rounded-xl border-2 border-ink bg-field px-4.5 py-3">
-                <input
-                    type="text"
-                    id="answer"
-                    name="answer"
-                    x-model="v"
-                    class="min-w-0 flex-1 border-0 bg-transparent text-[32px] font-bold text-ink outline-none placeholder:text-[20px] placeholder:font-normal placeholder:text-faint"
-                    placeholder={t(locale, "yourAnswer")}
-                    autocomplete="off"
-                    inputmode="none"
-                    required
-                    autofocus
-                />
-                {inputLabel && (
-                    <span class="text-xl font-semibold text-muted">
-                        {inputLabel}
-                    </span>
-                )}
-            </div>
+            {remainder ? (
+                <div class="flex items-end gap-3">
+                    <div class="flex-1">
+                        <label
+                            for="answer"
+                            class="mb-1 block text-sm font-semibold text-muted"
+                        >
+                            {t(locale, "answerQuotient")}
+                        </label>
+                        <div class="flex min-h-17 items-center rounded-xl border-2 border-ink bg-field px-4.5 py-3">
+                            <input
+                                type="text"
+                                id="answer"
+                                name="answer"
+                                x-ref="quotient"
+                                x-on:focus="aktiv = 'quotient'"
+                                maxlength="3"
+                                class="w-full min-w-0 border-0 bg-transparent text-[32px] font-bold text-ink outline-none"
+                                autocomplete="off"
+                                inputmode="none"
+                                required
+                                autofocus
+                            />
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <label
+                            for="answer-remainder"
+                            class="mb-1 block text-sm font-semibold text-muted"
+                        >
+                            {t(locale, "answerRemainder")}
+                        </label>
+                        <div class="flex min-h-17 items-center rounded-xl border-2 border-ink bg-field px-4.5 py-3">
+                            <input
+                                type="text"
+                                id="answer-remainder"
+                                name="remainder"
+                                x-ref="rest"
+                                x-on:focus="aktiv = 'rest'"
+                                maxlength="2"
+                                class="w-full min-w-0 border-0 bg-transparent text-[32px] font-bold text-ink outline-none"
+                                autocomplete="off"
+                                inputmode="none"
+                                required
+                            />
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <>
+                    <label for="answer" class="sr-only">
+                        {t(locale, "yourAnswer")}
+                    </label>
+                    <div class="flex min-h-17 items-center gap-3 rounded-xl border-2 border-ink bg-field px-4.5 py-3">
+                        <input
+                            type="text"
+                            id="answer"
+                            name="answer"
+                            x-ref="quotient"
+                            maxlength="8"
+                            class="min-w-0 flex-1 border-0 bg-transparent text-[32px] font-bold text-ink outline-none placeholder:text-[20px] placeholder:font-normal placeholder:text-faint"
+                            placeholder={t(locale, "yourAnswer")}
+                            autocomplete="off"
+                            inputmode="none"
+                            required
+                            autofocus
+                        />
+                        {inputLabel && (
+                            <span class="text-xl font-semibold text-muted">
+                                {inputLabel}
+                            </span>
+                        )}
+                    </div>
+                </>
+            )}
             <div class="grid grid-cols-3 gap-2">
                 {digits.map((digit) => (
                     <button
@@ -87,8 +162,17 @@ const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9];
                     inputmode={inputmode}
                     required
                     autofocus
-                    x-data={`{ pattern: ${JSON.stringify(pattern)} }`}
-                    x-on:input="$el.value = $el.value.replace(new RegExp(pattern, 'g'), '')"
+                    x-data={`{
+                        re: new RegExp(${JSON.stringify(pattern)}, 'g'),
+                        filter(el) {
+                            const clean = el.value.replace(this.re, '');
+                            if (clean === el.value) return;
+                            const pos = Math.max(0, el.selectionStart - (el.value.length - clean.length));
+                            el.value = clean;
+                            el.setSelectionRange(pos, pos);
+                        }
+                    }`}
+                    x-on:input="filter($el)"
                 />
                 {inputLabel && (
                     <span class="text-xl font-semibold text-muted">

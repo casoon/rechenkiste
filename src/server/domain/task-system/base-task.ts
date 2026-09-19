@@ -41,6 +41,8 @@ export abstract class BaseTask<TData = unknown> implements TaskInstance<TData> {
   readonly dropTargets?: DragDropTarget[];
 
   constructor(params: {
+    /** Nur beim Wiederherstellen aus der Session gesetzt */
+    id?: string;
     typeId: string;
     category: TaskCategory;
     grade: Grade;
@@ -53,7 +55,7 @@ export abstract class BaseTask<TData = unknown> implements TaskInstance<TData> {
     dragItems?: DragDropItem[];
     dropTargets?: DragDropTarget[];
   }) {
-    this.id = generateId();
+    this.id = params.id ?? generateId();
     this.typeId = params.typeId;
     this.category = params.category;
     this.grade = params.grade;
@@ -128,6 +130,8 @@ export interface ArithmeticData {
 export interface WordProblemData {
   story: string;
   answer: number;
+  // Rechenart — bestimmt den Hinweis
+  operation: "+" | "-" | "*" | "/" | "multi-step";
   // Schritte zur Lösung
   steps?: string[];
 }
