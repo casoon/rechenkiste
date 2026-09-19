@@ -87,8 +87,17 @@ const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9];
                     inputmode={inputmode}
                     required
                     autofocus
-                    x-data={`{ pattern: ${JSON.stringify(pattern)} }`}
-                    x-on:input="$el.value = $el.value.replace(new RegExp(pattern, 'g'), '')"
+                    x-data={`{
+                        re: new RegExp(${JSON.stringify(pattern)}, 'g'),
+                        filter(el) {
+                            const clean = el.value.replace(this.re, '');
+                            if (clean === el.value) return;
+                            const pos = Math.max(0, el.selectionStart - (el.value.length - clean.length));
+                            el.value = clean;
+                            el.setSelectionRange(pos, pos);
+                        }
+                    }`}
+                    x-on:input="filter($el)"
                 />
                 {inputLabel && (
                     <span class="text-xl font-semibold text-muted">

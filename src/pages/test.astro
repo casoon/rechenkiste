@@ -131,6 +131,21 @@ const taskHtml = await renderTaskFragment(currentTask, session.id, locale);
 </BaseLayout>
 
 <script>
+    // autofocus greift beim vollen Seitenaufruf nicht zuverlässig — und nach
+    // einem Fragment-Wechsel gar nicht. Deshalb explizit setzen, sonst tippt
+    // das Kind ins Leere und muss erst ins Feld klicken.
+    function focusAnswer() {
+        const field = document.getElementById("answer") as HTMLInputElement | null;
+        if (!field) return;
+        field.focus({ preventScroll: true });
+        const end = field.value.length;
+        try {
+            field.setSelectionRange(end, end);
+        } catch {
+            // Eingabetypen ohne Textauswahl ignorieren das
+        }
+    }
+
     function updateCategory(label: string) {
         const node = document.getElementById("task-category");
         if (node && label) {
@@ -167,6 +182,9 @@ const taskHtml = await renderTaskFragment(currentTask, session.id, locale);
         current.classList.add(isCorrect ? "bg-ok" : "bg-mark");
     }
 
+    focusAnswer();
+    document.addEventListener("astro:page-load", focusAnswer);
+
     document.addEventListener("htmx:afterSwap", (event) => {
         const target = (event as CustomEvent).detail.target;
 
@@ -179,8 +197,9 @@ const taskHtml = await renderTaskFragment(currentTask, session.id, locale);
             markCurrentDot(!!target.querySelector("#feedback-correct"));
         }
 
-        // Nächste Aufgabe geladen: Fortschritt aktualisieren
+        // Nächste Aufgabe geladen: Fortschritt aktualisieren, Feld scharf stellen
         if (target.id === "task-container") {
+            focusAnswer();
             const wrapper = document.getElementById("task-wrapper");
             if (wrapper) {
                 updateProgress(
