@@ -109,11 +109,6 @@ function escapeHtml(value: unknown): string {
     .replace(/'/g, "&#39;");
 }
 
-/** Zeilenumbrüche in der Frage als <br> — der Rest wird escaped */
-function withLineBreaks(value: string): string {
-  return escapeHtml(value).replace(/\n/g, "<br>");
-}
-
 function splitSvgQuestion(question: string): { svg: string; text: string } {
   const svgMatch = question.match(/<svg[\s\S]*?<\/svg>/);
   if (!svgMatch) return { svg: "", text: question };
@@ -121,6 +116,13 @@ function splitSvgQuestion(question: string): { svg: string; text: string } {
     svg: svgMatch[0],
     text: question.replace(svgMatch[0], "").trim(),
   };
+}
+
+/** Zeilenumbrüche im Textteil als <br> — der Rest wird escaped, ein enthaltenes <svg> bleibt unescaped */
+function withLineBreaks(value: string): string {
+  const { svg, text } = splitSvgQuestion(value);
+  const escapedText = escapeHtml(text).replace(/\n/g, "<br>");
+  return svg ? `${svg}<br>${escapedText}` : escapedText;
 }
 
 export async function renderTaskFragment(
