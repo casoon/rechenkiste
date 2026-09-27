@@ -4,6 +4,8 @@ A math practice application for elementary school children, built with the AHA-S
 
 **Live Demo:** [rechenkiste.casoon.dev](https://rechenkiste.casoon.dev)
 
+**Website and documentation:** [casoon.github.io/rechenkiste](https://casoon.github.io/rechenkiste/)
+
 ## Features
 
 - **Grade-based exercises** (Grades 1-5) with age-appropriate difficulty

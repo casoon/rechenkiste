@@ -1,0 +1,201 @@
+---
+import {
+  Badge,
+  Badges,
+  Button,
+  CodeBlock,
+  Facts,
+  Features,
+  Hero,
+  Quickstart,
+} from '@casoon/pages-theme/components';
+import Base from '@casoon/pages-theme/layouts/Base.astro';
+import { url } from '@casoon/pages-theme/url';
+
+const liveApp = 'https://rechenkiste.casoon.dev';
+
+// Excerpt from src/server/services/task-renderer.ts
+const renderer = `const runtime = createAstroRuntime({
+  ...ahaStackPreset({ locale, htmxHeaders: true }),
+  components: [
+    { id: "feedback-correct", loader: () => import("@fragments/FeedbackCorrect.astro") },
+    { id: "feedback-incorrect", loader: () => import("@fragments/FeedbackIncorrect.astro") },
+    // … task and result fragments
+  ],
+});
+
+const html = await runtime.renderToString({ componentId, props });`;
+
+// Excerpt from src/components/fragments/AnswerForm.astro
+const form = `<form
+  id="answer-form"
+  hx-post="/api/test/answer"
+  hx-target="#feedback-container"
+  hx-swap="innerHTML"
+  hx-disabled-elt="find button[type='submit']"
+>`;
+
+const local = `git clone https://github.com/casoon/rechenkiste.git
+cd rechenkiste
+pnpm install
+pnpm dev`;
+
+const screens = [
+  {
+    file: 'screens/home.webp',
+    alt: 'Start page of the English version: grade buttons 1 to 5, task count 10, 20 or 30, checkboxes for adaptive difficulty and retrying incorrect answers, and a Start button.',
+    caption: 'Start: pick a grade and how many tasks.',
+  },
+  {
+    file: 'screens/task.webp',
+    alt: 'Task 1 of 10 in the category Measurements: “How much is 2 cm in mm?” with an answer field showing the unit mm, an on-screen number pad and a Check Answer button.',
+    caption: 'A task with the number pad for whole-number answers.',
+  },
+  {
+    file: 'screens/feedback.webp',
+    alt: 'A fraction task showing a bar of four parts with three coloured, followed by the feedback “That was incorrect”, the correct answer 3/4, a hint and a Next Task button.',
+    caption: 'Feedback fragment after a wrong answer, with hint.',
+  },
+];
+---
+
+<Base>
+  <Hero
+    eyebrow="CASOON Open Source · App"
+    title="Math practice for primary school, rendered on the server."
+    lead="Rechenkiste generates maths tasks for grades 1 to 5, checks every answer on the server and swaps tasks and feedback in as HTML fragments. It is the demo app for the AHA stack and @casoon/fragment-renderer."
+  >
+    <div class="actions">
+      <Button href={liveApp}>Open the live app</Button>
+      <Button href={url('docs/')} variant="secondary">Read the docs</Button>
+    </div>
+    <Badges>
+      <Badge>MIT</Badge>
+      <Badge tone="brand">v0.1.2</Badge>
+      <Badge>Astro 7</Badge>
+      <Badge>htmx 2</Badge>
+      <Badge>Alpine.js 3</Badge>
+      <Badge>Cloudflare Workers</Badge>
+    </Badges>
+    <figure slot="output" class="shot">
+      <img
+        src={url('screens/task.webp')}
+        width="1280"
+        height="800"
+        alt="Task 1 of 10 in the category Measurements: “How much is 2 cm in mm?” with an answer field, an on-screen number pad and a Check Answer button."
+      />
+      <figcaption>Captured from <a href={liveApp}>rechenkiste.casoon.dev</a></figcaption>
+    </figure>
+  </Hero>
+
+  <Facts
+    items={[
+      { value: '105', label: 'task types in the registry' },
+      { value: '5', label: 'grades, from 1 to 5' },
+      { value: '3', label: 'languages: German, English, Ukrainian' },
+      { value: '12', label: 'Astro components behind the htmx fragments' },
+    ]}
+  />
+
+  <Features
+    items={[
+      {
+        title: 'Tasks that check themselves',
+        body: 'Every task type implements one interface: it generates a question, validates the answer and returns a hint. Equivalent fractions like 6/8 and 3/4 count as correct.',
+      },
+      {
+        title: 'Fragments instead of page loads',
+        body: 'htmx posts the answer, the server renders the feedback component with @casoon/fragment-renderer and returns HTML. The next task arrives the same way.',
+      },
+      {
+        title: 'Adaptive and forgiving',
+        body: 'Optional adaptive difficulty moves up a grade after three correct answers in a row and down after three incorrect ones, and incorrect tasks can be repeated at the end of a run.',
+      },
+      {
+        title: 'Built for children',
+        body: 'Number pad for whole-number answers, SVG drawings for geometry, fractions and clocks, multiple choice and drag and drop, and read-aloud via the browser’s speech synthesis.',
+      },
+    ]}
+  />
+
+  <section class="screens" aria-labelledby="screens-title">
+    <div class="head">
+      <h2 id="screens-title" class="cp-label">From the live app</h2>
+      <a href={liveApp}>Try it yourself →</a>
+    </div>
+    <div class="grid">
+      {
+        screens.map((s) => (
+          <figure class="shot">
+            <img src={url(s.file)} width="1280" height="800" alt={s.alt} loading="lazy" />
+            <figcaption>{s.caption}</figcaption>
+          </figure>
+        ))
+      }
+    </div>
+  </section>
+
+  <Quickstart
+    title="Run it locally"
+    lead="Node and pnpm are all you need. The Cloudflare adapter runs the app in workerd locally, sessions included."
+    steps={[
+      'Clone the repository and install the dependencies with <code>pnpm install</code>.',
+      'Start the dev server with <code>pnpm dev</code> and open the printed URL.',
+      'Run <code>pnpm test</code>, <code>pnpm check</code> and <code>pnpm lint</code> before a change goes in.',
+    ]}
+  >
+    <CodeBlock code={local} lang="sh" label="Local" />
+    <CodeBlock code={renderer} lang="ts" title="task-renderer.ts" label="Renderer" />
+    <CodeBlock code={form} lang="astro" title="AnswerForm.astro" label="htmx" />
+  </Quickstart>
+</Base>
+
+<style>
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .shot {
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  .shot img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-bottom: 1px solid var(--border);
+  }
+  .shot figcaption {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+  .screens {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+  .head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .head h2 {
+    margin: 0;
+  }
+  .head a {
+    font-size: 14px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+    gap: 20px;
+  }
+</style>
