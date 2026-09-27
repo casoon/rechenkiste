@@ -4,7 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import cloudflare from "@astrojs/cloudflare";
 import siteFiles from "@casoon/astro-site-files";
 
-const siteUrl = "https://rechenkiste.casoon.workers.dev/";
+const siteUrl = "https://rechenkiste.casoon.dev/";
 
 // https://astro.build/config
 export default defineConfig({
