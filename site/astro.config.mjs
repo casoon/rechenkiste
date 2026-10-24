@@ -11,6 +11,8 @@ export default defineConfig({
       name: 'rechenkiste',
       description:
         'Math practice app for primary school, grades 1 to 5. A demo of the AHA stack (Astro, htmx, Alpine.js) and @casoon/fragment-renderer.',
+      tagline: 'Math practice for primary school',
+      website: 'https://rechenkiste.casoon.dev',
       repo: 'casoon/rechenkiste',
       version: '0.1.2',
       license: 'MIT',
