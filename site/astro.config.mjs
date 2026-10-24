@@ -14,7 +14,6 @@ export default defineConfig({
       tagline: 'Math practice for primary school',
       website: 'https://rechenkiste.casoon.dev',
       repo: 'casoon/rechenkiste',
-      version: '0.1.2',
       license: 'MIT',
       packages: [
         { label: 'Live app', href: 'https://rechenkiste.casoon.dev' },
