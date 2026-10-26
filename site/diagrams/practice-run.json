@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "type": "sequence",
+  "title": "One practice run, request by request",
+  "description": "The start form creates the session with all tasks and redirects to /test, which renders the first task on the server. Each answer is an htmx POST to /api/test/answer: the route checks the submission against the session, validates it, advances the session and returns the rendered feedback fragment. The next task is fetched as a fragment from /api/test/task, automatically 600 ms after a correct answer or with the Next task button after a wrong one.",
+  "source": "src/pages/api/test/start.ts, src/pages/test.astro, src/pages/api/test/answer.ts, src/pages/api/test/task.ts, src/services/task-renderer.ts",
+  "width": 900,
+  "height": 960,
+  "sequence": {
+    "participants": [
+      {
+        "id": "browser",
+        "label": "Browser",
+        "sublabel": "htmx",
+        "kind": "actor"
+      },
+      {
+        "id": "route",
+        "label": "Astro routes",
+        "sublabel": "Worker"
+      },
+      {
+        "id": "session",
+        "label": "Session",
+        "sublabel": "KV",
+        "kind": "database"
+      },
+      {
+        "id": "renderer",
+        "label": "fragment-renderer",
+        "sublabel": "Astro components"
+      }
+    ],
+    "messages": [
+      {
+        "from": "browser",
+        "to": "route",
+        "label": "POST /api/test/start"
+      },
+      {
+        "from": "route",
+        "to": "session",
+        "label": "store all tasks"
+      },
+      {
+        "from": "route",
+        "to": "browser",
+        "label": "redirect /test",
+        "kind": "reply"
+      },
+      {
+        "from": "browser",
+        "to": "route",
+        "label": "GET /test"
+      },
+      {
+        "from": "route",
+        "to": "renderer",
+        "label": "first task"
+      },
+      {
+        "from": "route",
+        "to": "browser",
+        "label": "page",
+        "kind": "reply"
+      },
+      {
+        "from": "browser",
+        "to": "route",
+        "label": "hx-post /api/test/answer"
+      },
+      {
+        "from": "route",
+        "to": "session",
+        "label": "load, check task"
+      },
+      {
+        "from": "route",
+        "to": "route",
+        "label": "validate, advance"
+      },
+      {
+        "from": "route",
+        "to": "session",
+        "label": "save"
+      },
+      {
+        "from": "route",
+        "to": "renderer",
+        "label": "feedback"
+      },
+      {
+        "from": "route",
+        "to": "browser",
+        "label": "fragment, HX-Trigger",
+        "kind": "reply"
+      },
+      {
+        "from": "browser",
+        "to": "route",
+        "label": "GET /api/test/task"
+      },
+      {
+        "from": "route",
+        "to": "renderer",
+        "label": "next task"
+      },
+      {
+        "from": "route",
+        "to": "browser",
+        "label": "fragment",
+        "kind": "reply"
+      }
+    ],
+    "fragments": [
+      {
+        "kind": "loop",
+        "label": "every task",
+        "from": 6,
+        "to": 14
+      }
+    ],
+    "numbered": true
+  }
+}

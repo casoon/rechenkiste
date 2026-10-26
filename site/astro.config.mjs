@@ -29,6 +29,7 @@ export default defineConfig({
       },
       // An app, not a package: real screen captures sit on the start page instead.
       showcase: false,
+      mdxComponents: './src/mdx-components.ts',
     }),
   ],
 });
