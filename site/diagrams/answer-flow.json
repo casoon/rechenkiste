@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "type": "flow",
+  "title": "What happens when a child answers",
+  "description": "The answer form posts to /api/test/answer with htmx. The route loads the session from the Astro session store and checks that the submission belongs to the current task; a stale submission is refused with 409. Otherwise the task validates the answer with its own rules, the session moves on, and @casoon/fragment-renderer renders the feedback component. htmx swaps the returned HTML into the feedback container, without a page load.",
+  "source": "src/components/fragments/AnswerForm.astro, src/pages/api/test/answer.ts, src/services/task-renderer.ts",
+  "width": 1240,
+  "height": 300,
+  "flow": {
+    "nodes": [
+      { "id": "form", "label": "Answer form", "sublabel": "hx-post", "kind": "start" },
+      { "id": "current", "label": "Current task?", "sublabel": "session in KV", "kind": "decision" },
+      { "id": "stale", "label": "409", "sublabel": "stale submission", "kind": "end" },
+      { "id": "validate", "label": "Task rules", "sublabel": "check, hint" },
+      { "id": "render", "label": "fragment-renderer", "sublabel": "feedback component" },
+      { "id": "swap", "label": "htmx swap", "sublabel": "no page load", "kind": "end" }
+    ],
+    "edges": [
+      { "from": "form", "to": "current", "label": "POST" },
+      { "from": "current", "to": "stale", "label": "no" },
+      { "from": "current", "to": "validate", "label": "yes" },
+      { "from": "validate", "to": "render", "label": "result" },
+      { "from": "render", "to": "swap", "label": "HTML" }
+    ],
+    "mainPath": ["form", "current", "validate", "render", "swap"],
+    "orientation": "landscape"
+  }
+}

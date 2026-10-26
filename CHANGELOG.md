@@ -27,6 +27,7 @@ from `main`; versions mark the state of `package.json`.
   keyboard with ":" on iOS.
 - The pause after a correct answer is 600 ms instead of 1500 ms.
 - Licensed under MIT.
+- **Project page:** the start page shows a fresh capture of the live app as its hero and a diagram of how an answer becomes an htmx fragment; the code excerpts moved to the documentation, where [Request flow](https://casoon.github.io/rechenkiste/docs/architecture/aha-stack/) now carries a sequence diagram of a practice run.
 
 ### Fixed
 
