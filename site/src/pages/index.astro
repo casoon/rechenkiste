@@ -1,17 +1,29 @@
 ---
+import { readFile } from 'node:fs/promises';
 import {
   Badge,
   Badges,
   Button,
   CodeBlock,
   Facts,
+  Faq,
   Features,
   Hero,
   Quickstart,
+  ReleaseHighlights,
 } from '@casoon/pages-theme/components';
 import Base from '@casoon/pages-theme/layouts/Base.astro';
 import { url } from '@casoon/pages-theme/url';
+import config from 'virtual:casoon-pages/config';
+import { parseChangelog } from '@casoon/pages-theme/lib/changelog';
 import Diagram from '../components/Diagram.astro';
+
+// Skip "Unreleased": it has no version to show as "New in v…" yet.
+const latestRelease = config.changelog
+  ? parseChangelog(await readFile(config.changelog, 'utf8')).find(
+      (r) => r.version.toLowerCase() !== 'unreleased'
+    )
+  : undefined;
 
 const liveApp = 'https://rechenkiste.casoon.dev';
 
@@ -147,6 +159,33 @@ const screens = [
   >
     <CodeBlock code={local} lang="sh" label="Local" />
   </Quickstart>
+
+  {latestRelease && <ReleaseHighlights release={latestRelease} />}
+
+  <Faq
+    items={[
+      {
+        q: 'Do I need to sign up or install anything to try it?',
+        a: 'No. The live app runs in the browser at rechenkiste.casoon.dev — pick a grade, a task count and a difficulty, and start. Nothing is saved beyond the current session.',
+      },
+      {
+        q: 'Which languages are supported?',
+        a: 'German, English and Ukrainian. Pages and tasks can also be read aloud through the browser’s speech synthesis, offered only when a voice for that language is available.',
+      },
+      {
+        q: 'How does the app check an answer without reloading the page?',
+        a: 'An answer is sent as an htmx request; the server validates it with the task’s own rules — equivalent fractions like 6/8 and 3/4 both count as correct — and returns a rendered feedback fragment that htmx swaps into the page.',
+      },
+      {
+        q: 'What does "adaptive difficulty" do?',
+        a: 'When enabled, it moves up a grade after three correct answers in a row and down after three incorrect ones. Missed tasks can also be repeated at the end of a run.',
+      },
+      {
+        q: 'Can I run it locally or reuse the renderer in my own project?',
+        a: 'Yes. Clone the repository and run pnpm install && pnpm dev; Rechenkiste also doubles as the demo app for @casoon/fragment-renderer and the AHA stack (Astro, htmx, Alpine.js).',
+      },
+    ]}
+  />
 </Base>
 
 <style>
