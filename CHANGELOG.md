@@ -18,6 +18,7 @@ from `main`; versions mark the state of `package.json`.
 
 ### Changed
 
+- **Pages:** the project site uses the current shared theme (0.12.5).
 - Upgrade to Astro 7 with `@astrojs/cloudflare`; `@casoon/astro-site-files` generates sitemap,
   robots.txt and llms.txt.
 - htmx and Alpine.js are bundled from npm instead of loaded from a CDN.
