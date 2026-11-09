@@ -20,6 +20,8 @@ from `main`; versions mark the state of `package.json`.
 
 - **App icons:** replace the abstract mark with colourful arithmetic blocks, with PNG home-screen icons for iPhone, iPad and Android.
 - **Pages:** the project site uses the current shared theme (0.12.6).
+- **SEO:** the start page title names what the app is ("Mathe-Übungen für Klasse 1–5"), and the
+  tech page has its own meta description.
 - Upgrade to Astro 7 with `@astrojs/cloudflare`; `@casoon/astro-site-files` generates sitemap,
   robots.txt and llms.txt.
 - htmx and Alpine.js are bundled from npm instead of loaded from a CDN.
