@@ -18,6 +18,7 @@ from `main`; versions mark the state of `package.json`.
 
 ### Changed
 
+- **App icons:** replace the abstract mark with colourful arithmetic blocks, with PNG home-screen icons for iPhone, iPad and Android.
 - **Pages:** the project site uses the current shared theme (0.12.6).
 - Upgrade to Astro 7 with `@astrojs/cloudflare`; `@casoon/astro-site-files` generates sitemap,
   robots.txt and llms.txt.
@@ -28,11 +29,18 @@ from `main`; versions mark the state of `package.json`.
   keyboard with ":" on iOS.
 - The pause after a correct answer is 600 ms instead of 1500 ms.
 - Licensed under MIT.
+- Dependencies updated (Astro 7.4, `@casoon/astro-site-files` 0.7, chartlet 0.23 for the project
+  page); robots.txt now states `Allow: /` for all crawlers instead of an empty group.
 - **Project page:** the start page shows a fresh capture of the live app as its hero and a diagram of how an answer becomes an htmx fragment; the code excerpts moved to the documentation, where [Request flow](https://casoon.github.io/rechenkiste/docs/architecture/aha-stack/) now carries a sequence diagram of a practice run.
 - **Project page:** the start page now carries a release teaser and an FAQ (theme 0.11.1).
 
 ### Fixed
 
+- Number pad no longer drops a digit on iPad/iOS Safari when two keys are tapped quickly
+  (double-tap zoom swallowed the tap, so "64" arrived as "6").
+- A test no longer contains the same task twice.
+- hreflang links point to the same page in the other languages instead of to the start pages,
+  without a trailing slash, matching canonical and sitemap.
 - Each task validates with its own rules again after being read back from the session; before,
   a generic numeric comparison accepted "6" for "6 Rest 3".
 - Money tasks compare in whole cents; float residue had accepted answers one cent off.

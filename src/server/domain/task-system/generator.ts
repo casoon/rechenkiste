@@ -3,11 +3,37 @@
  */
 
 import type { Locale } from "@i18n/translations";
-import type { Grade, TaskGenerator, TaskInstance } from "./interfaces";
+import type {
+  Grade,
+  TaskDefinition,
+  TaskGenerator,
+  TaskInstance,
+} from "./interfaces";
 import { taskRegistry } from "./registry";
 
 function randomChoice<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
+}
+
+/**
+ * Erzeugt eine Aufgabe, die in dieser Session noch nicht vorkam.
+ * Kleine Aufgabentypen (z. B. "81 ÷ 9") würfeln sonst leicht Doppelte; nach
+ * einigen Versuchen wird die Wiederholung hingenommen.
+ */
+export function generateUnique(
+  definition: TaskDefinition,
+  locale: Locale,
+  usedTasks: Set<string>,
+): TaskInstance {
+  // Frage allein reicht nicht: Sortieraufgaben teilen den Fragetext
+  const key = (task: TaskInstance) =>
+    `${task.question}|${JSON.stringify(task.data)}`;
+  let task = definition.generate(locale);
+  for (let attempt = 0; attempt < 20 && usedTasks.has(key(task)); attempt++) {
+    task = definition.generate(locale);
+  }
+  usedTasks.add(key(task));
+  return task;
 }
 
 /**
@@ -41,6 +67,7 @@ class TaskGeneratorImpl implements TaskGenerator {
   generateMany(grade: Grade, count: number, locale: Locale): TaskInstance[] {
     const tasks: TaskInstance[] = [];
     const usedTypeIds = new Set<string>();
+    const usedTasks = new Set<string>();
 
     // Sammle alle verfügbaren Task-Definitionen für die relevanten Klassenstufen
     const availableDefinitions = [
@@ -75,7 +102,7 @@ class TaskGeneratorImpl implements TaskGenerator {
       }
 
       usedTypeIds.add(definition.typeId);
-      tasks.push(definition.generate(locale));
+      tasks.push(generateUnique(definition, locale, usedTasks));
     }
 
     return tasks;

@@ -15,6 +15,7 @@ import {
   type ChoiceOption,
   type DragDropItem,
   type DragDropTarget,
+  generateUnique,
   initTaskSystem,
   rehydrateTask,
   taskGenerator,
@@ -373,6 +374,7 @@ export function createCustomSession(
 
   const taskInstances: TaskInstance[] = [];
   const usedTypeIds = new Set<string>();
+  const usedTasks = new Set<string>();
 
   for (let i = 0; i < taskCount; i++) {
     // Filtere bereits verwendete Typen heraus
@@ -387,8 +389,7 @@ export function createCustomSession(
     const randomIndex = Math.floor(Math.random() * candidates.length);
     const definition = candidates[randomIndex];
     usedTypeIds.add(definition.typeId);
-    const task = definition.generate(locale);
-    taskInstances.push(task);
+    taskInstances.push(generateUnique(definition, locale, usedTasks));
   }
 
   const tasks = taskInstances.map(serializeTask);

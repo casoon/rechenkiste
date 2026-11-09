@@ -40,7 +40,7 @@ export type {
 
 // Registry & Generator
 export { taskRegistry } from "./registry";
-export { taskGenerator } from "./generator";
+export { taskGenerator, generateUnique } from "./generator";
 
 // Base Task
 export { BaseTask, generateId } from "./base-task";

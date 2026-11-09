@@ -169,7 +169,13 @@
         @apply placeholder:text-[20px] placeholder:font-normal placeholder:text-faint;
     }
 
-    /* Ziffernblock */
+    /* Ziffernblock — touch-manipulation: sonst wertet iOS-Safari zwei schnelle
+       Tipps als Doppeltipp-Zoom und verschluckt eine Ziffer */
+    .key,
+    .key-alt {
+        @apply touch-manipulation;
+    }
+
     .key {
         @apply min-h-15 w-full rounded-xl border-2 border-line bg-white
            text-[26px] font-semibold text-ink transition-colors;
