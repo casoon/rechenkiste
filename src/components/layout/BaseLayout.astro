@@ -36,6 +36,11 @@ const locales: { code: Locale; label: string }[] = [
 ];
 
 const currentPath = Astro.url.pathname.replace(/^\/(en|uk)/, "") || "/";
+
+// hreflang: dieselbe Seite in der anderen Sprache, Schreibweise wie Canonical
+// und Sitemap ("/en", nicht "/en/")
+const alternateUrl = (alt: Locale) =>
+    `${siteUrl}${getLocalizedPath(currentPath, alt).replace(/(.)\/$/, "$1")}`;
 ---
 
 <!doctype html>
@@ -57,7 +62,7 @@ const currentPath = Astro.url.pathname.replace(/^\/(en|uk)/, "") || "/";
         <meta property="og:url" content={currentUrl} />
         <meta property="og:title" content={fullTitle} />
         <meta property="og:description" content={metaDescription} />
-        <meta property="og:image" content={`${siteUrl}/icons/icon-512.svg`} />
+        <meta property="og:image" content={`${siteUrl}/icons/icon-512.png`} />
         <meta property="og:locale" content={locale === "de" ? "de_DE" : locale === "en" ? "en_US" : "uk_UA"} />
         <meta property="og:site_name" content={t(locale, "appName")} />
 
@@ -65,11 +70,12 @@ const currentPath = Astro.url.pathname.replace(/^\/(en|uk)/, "") || "/";
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:title" content={fullTitle} />
         <meta name="twitter:description" content={metaDescription} />
-        <meta name="twitter:image" content={`${siteUrl}/icons/icon-512.svg`} />
+        <meta name="twitter:image" content={`${siteUrl}/icons/icon-512.png`} />
 
         <!-- Favicon & App Icons -->
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple_touch_icon_180.png" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#1B3A6B" />
 
@@ -80,10 +86,10 @@ const currentPath = Astro.url.pathname.replace(/^\/(en|uk)/, "") || "/";
         <meta name="application-name" content={t(locale, "appName")} />
 
         <!-- Language alternates -->
-        <link rel="alternate" hreflang="de" href={`${siteUrl}/`} />
-        <link rel="alternate" hreflang="en" href={`${siteUrl}/en/`} />
-        <link rel="alternate" hreflang="uk" href={`${siteUrl}/uk/`} />
-        <link rel="alternate" hreflang="x-default" href={`${siteUrl}/`} />
+        <link rel="alternate" hreflang="de" href={alternateUrl("de")} />
+        <link rel="alternate" hreflang="en" href={alternateUrl("en")} />
+        <link rel="alternate" hreflang="uk" href={alternateUrl("uk")} />
+        <link rel="alternate" hreflang="x-default" href={alternateUrl("de")} />
 
         <!-- Structured Data (JSON-LD) -->
         <script is:inline type="application/ld+json" set:html={JSON.stringify({
