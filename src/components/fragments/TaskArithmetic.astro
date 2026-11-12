@@ -32,16 +32,16 @@ const {
     {
         svg ? (
             <>
-                <div class="rounded-xl border border-line bg-field p-4">
+                <div class="task-figure rounded-xl border border-line bg-field p-2 sm:p-4">
                     <Fragment set:html={svg} />
                 </div>
-                <span class="text-2xl leading-snug font-semibold whitespace-pre-line">
+                <span class="text-xl leading-snug font-semibold sm:text-2xl whitespace-pre-line">
                     {text}
                 </span>
             </>
         ) : (
             <span
-                class="text-[40px] leading-[1.15] font-bold tracking-[-.01em] whitespace-pre-line"
+                class="text-[34px] leading-[1.15] sm:text-[40px] font-bold tracking-[-.01em] whitespace-pre-line"
             >
                 {question}
             </span>

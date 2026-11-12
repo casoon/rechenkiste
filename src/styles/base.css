@@ -201,7 +201,7 @@
     }
 
     .progress-dot {
-        @apply block size-2.5 rounded-full bg-grid;
+        @apply block size-2 rounded-full bg-grid sm:size-2.5;
     }
 
     /* Rückmeldung */
@@ -240,6 +240,29 @@
 
     .language-btn.active {
         @apply border-b-2 border-paper pb-0.5 font-semibold text-paper;
+    }
+}
+
+/* Kleine Handys (iPhone 12 & Co.): Ziffernblock, Eingabe und Abbildung
+   flacher, damit Aufgabe und „Prüfen“ ohne Scrollen auf den Bildschirm passen.
+   Außerhalb der Layer, damit es die h-32…h-40 an den Aufgaben-SVGs schlägt. */
+@media (max-height: 760px) {
+    .key,
+    .key-alt {
+        @apply min-h-12;
+    }
+
+    #answer-form .min-h-17,
+    #answer-form .input-field {
+        @apply min-h-14 py-2;
+    }
+
+    .task-figure svg {
+        @apply h-20;
+    }
+
+    .btn-check {
+        @apply min-h-13 py-3;
     }
 }
 

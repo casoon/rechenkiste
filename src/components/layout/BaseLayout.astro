@@ -12,9 +12,11 @@ interface Props {
     title: string;
     locale?: Locale;
     description?: string;
+    /** Übungsmodus: ohne Kopf- und Fußleiste, damit die Aufgabe ganz sichtbar ist */
+    focus?: boolean;
 }
 
-const { title, locale = "de", description } = Astro.props;
+const { title, locale = "de", description, focus = false } = Astro.props;
 
 const siteUrl = "https://rechenkiste.casoon.dev";
 const currentUrl = `${siteUrl}${Astro.url.pathname}`;
@@ -138,7 +140,7 @@ const alternateUrl = (alt: Locale) =>
     <body class="min-h-screen">
         <div class="flex min-h-screen flex-col">
             <!-- Header -->
-            <header class="bg-ink text-paper">
+            {!focus && (<header class="bg-ink text-paper">
                 <div
                     class="mx-auto flex max-w-[1000px] flex-wrap items-center justify-between gap-4 px-6 py-3.5"
                 >
@@ -189,18 +191,23 @@ const alternateUrl = (alt: Locale) =>
                         </nav>
                     </div>
                 </div>
-            </header>
+            </header>)}
 
             <!-- Main Content -->
             <main
-                class="flex flex-1 justify-center px-5 pt-9 pb-13"
+                class:list={[
+                    "flex flex-1 justify-center",
+                    focus
+                        ? "px-3 pt-3 pb-6 sm:px-5 sm:pt-9 sm:pb-13"
+                        : "px-5 pt-9 pb-13",
+                ]}
                 transition:animate="fade"
             >
                 <slot />
             </main>
 
             <!-- Footer -->
-            <footer class="border-t border-line bg-panel">
+            {!focus && (<footer class="border-t border-line bg-panel">
                 <div
                     class="mx-auto flex max-w-[1000px] flex-wrap items-center justify-between gap-4 px-6 py-4.5 text-sm text-muted"
                 >
@@ -229,7 +236,7 @@ const alternateUrl = (alt: Locale) =>
                         hx-trigger="load, taskLoaded from:body, feedbackShown from:body"
                         hx-swap="innerHTML"></span>
                 </div>
-            </footer>
+            </footer>)}
         </div>
 
         <script is:inline define:vars={{ speechLang: locale }}>

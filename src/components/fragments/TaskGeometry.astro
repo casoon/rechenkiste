@@ -27,10 +27,10 @@ const {
 ---
 
 <QuestionBlock>
-    <div class="rounded-xl border border-line bg-field p-4">
+    <div class="task-figure rounded-xl border border-line bg-field p-2 sm:p-4">
         <Fragment set:html={svgMarkup} />
     </div>
-    <span class="text-2xl leading-snug font-semibold">{prompt}</span>
+    <span class="text-xl leading-snug font-semibold sm:text-2xl">{prompt}</span>
 </QuestionBlock>
 
 <AnswerForm locale={locale} sessionId={sessionId} taskId={taskId}>

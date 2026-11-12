@@ -18,6 +18,9 @@ from `main`; versions mark the state of `package.json`.
 
 ### Changed
 
+- **Practice view:** focus mode without header and footer; progress, category and read-aloud sit
+  in one compact row, and on small phones (e.g. iPhone 12) task, number pad and check button fit
+  on screen without scrolling. "Stop practising" stays below the card.
 - **App icons:** replace the abstract mark with colourful arithmetic blocks, with PNG home-screen icons for iPhone, iPad and Android.
 - **Pages:** the project site uses the current shared theme (0.12.12).
 - **SEO:** the start page title names what the app is ("Mathe-Übungen für Klasse 1–5"), and the

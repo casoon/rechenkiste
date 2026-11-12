@@ -18,11 +18,11 @@ const { locale, sessionId, taskId } = Astro.props;
     hx-target="#feedback-container"
     hx-swap="innerHTML"
     hx-disabled-elt="find button[type='submit']"
-    class="mt-6 flex flex-col gap-5"
+    class="mt-4 flex flex-col gap-3 sm:mt-6 sm:gap-5"
 >
     <AnswerFields sessionId={sessionId} locale={locale} taskId={taskId} />
     <slot />
     <button type="submit" class="btn-check">{t(locale, "checkAnswer")}</button>
 </form>
 
-<div id="feedback-container" class="mt-6 empty:mt-0"></div>
+<div id="feedback-container" class="mt-4 empty:mt-0 sm:mt-6"></div>

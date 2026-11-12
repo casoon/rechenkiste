@@ -58,7 +58,7 @@ const state = `{
     </span>
 </QuestionBlock>
 
-<div id="drag-drop-container" class="mt-6 flex flex-col gap-4.5" x-data={state}>
+<div id="drag-drop-container" class="mt-4 flex flex-col gap-4.5 sm:mt-6" x-data={state}>
     <div class="flex min-h-16 flex-wrap items-center gap-2.5">
         <template x-for="item in items" :key="item.id">
             <button
@@ -132,4 +132,4 @@ const state = `{
     </form>
 </div>
 
-<div id="feedback-container" class="mt-6 empty:mt-0"></div>
+<div id="feedback-container" class="mt-4 empty:mt-0 sm:mt-6"></div>
