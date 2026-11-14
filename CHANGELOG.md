@@ -22,7 +22,7 @@ from `main`; versions mark the state of `package.json`.
   in one compact row, and on small phones (e.g. iPhone 12) task, number pad and check button fit
   on screen without scrolling. "Stop practising" stays below the card.
 - **App icons:** replace the abstract mark with colourful arithmetic blocks, with PNG home-screen icons for iPhone, iPad and Android.
-- **Pages:** the project site uses the current shared theme (0.12.12).
+- **Pages:** the project site uses the current shared theme (0.12.14).
 - **SEO:** the start page title names what the app is ("Mathe-Übungen für Klasse 1–5"), and the
   tech page has its own meta description.
 - Upgrade to Astro 7 with `@astrojs/cloudflare`; `@casoon/astro-site-files` generates sitemap,
