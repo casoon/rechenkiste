@@ -18,6 +18,9 @@ from `main`; versions mark the state of `package.json`.
 
 ### Changed
 
+- **robots.txt:** `@casoon/astro-site-files` 0.8.0 with the `openToAi` preset; AI search, user
+  fetches, training and archives are allowed, only AI scrapers without published crawler rules
+  are blocked.
 - **Practice view:** focus mode without header and footer; progress, category and read-aloud sit
   in one compact row, and on small phones (e.g. iPhone 12) task, number pad and check button fit
   on screen without scrolling. "Stop practising" stays below the card.

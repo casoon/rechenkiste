@@ -70,7 +70,12 @@ export default defineConfig({
             ]),
         ],
       },
-      robots: {},
+      // KI-Suche, Nutzerabrufe, Training und Archive erlaubt; gesperrt sind nur KI-Scraper
+      // ohne veröffentlichte Crawler-Regeln.
+      robots: {
+        preset: "openToAi",
+        groups: { unknownAi: "disallow" },
+      },
       llms: {
         title: "Rechenkiste",
         description:

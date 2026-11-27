@@ -37,8 +37,8 @@ importers:
         specifier: ^0.9.12
         version: 0.9.12(prettier@3.9.10)(typescript@6.0.3)
       '@casoon/astro-site-files':
-        specifier: ^0.7.2
-        version: 0.7.2(astro@7.4.8(@types/node@24.10.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: ^0.8.0
+        version: 0.8.0(astro@7.4.8(@types/node@24.10.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.14.0(jiti@2.7.0))
@@ -333,8 +333,8 @@ packages:
     resolution: {integrity: sha512-CuNiSqg7+e1cO/GjffyMOm5Tt2jUF9CWHHnvQ/UkqvtkGfHdgwEC0wpmq7fkN3gxwpRnrAN0WzO3vREKmNolMQ==}
     engines: {node: '>=18'}
 
-  '@casoon/astro-site-files@0.7.2':
-    resolution: {integrity: sha512-s5mHzicyF/f5s718DZere9Q7nFgKYKcXMeBkZ3OZIUtzUw4pL+HdpYAclDgaT0hnZBClFYHsCwnzsekCE3xaJg==}
+  '@casoon/astro-site-files@0.8.0':
+    resolution: {integrity: sha512-QvgxWwyls+/IKiH7FmowFaBPtfk/nXNPFCtiDB6VYuxmrMqaK8s+NgfbBHVtHX1VI1FRV5Oj23xYy5X9PDwBTg==}
     engines: {node: '>=22.12.0'}
     peerDependencies:
       astro: '>=6.0.0'
@@ -3005,7 +3005,7 @@ snapshots:
     dependencies:
       fontkitten: 1.0.3
 
-  '@casoon/astro-site-files@0.7.2(astro@7.4.8(@types/node@24.10.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))':
+  '@casoon/astro-site-files@0.8.0(astro@7.4.8(@types/node@24.10.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))':
     optionalDependencies:
       astro: 7.4.8(@types/node@24.10.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)
 

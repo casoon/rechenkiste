@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
-    "@casoon/astro-site-files": "^0.7.2",
+    "@casoon/astro-site-files": "^0.8.0",
     "@eslint/js": "^10.0.1",
     "@types/alpinejs": "^3.17.0",
     "@typescript-eslint/parser": "^8.72.2",
